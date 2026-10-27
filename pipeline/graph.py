@@ -9,6 +9,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
 from . import config
+from .catalog import RULES
 from .decision import DecisionModel, make_decision_model
 from .extract import CRITERIA_PATH, extract
 from .llm import LLMStopError
@@ -48,9 +49,27 @@ def decision_model() -> DecisionModel:
     return make_decision_model(CRITERIA_PATH.read_text(encoding="utf-8"))
 
 
+# Option descriptions for DecisionModel questions (from tieu_chi_v2 Mục 2 and Mục 4).
+RELEVANCE_OPTIONS = {
+    Relevance.TT.value: "Bài nói về chính công ty, công ty con chưa niêm yết, lãnh đạo/cổ đông chủ chốt, "
+                        "hoặc là một bên giao dịch, hoặc nêu số liệu riêng của mã",
+    Relevance.GT.value: "Bài về công ty con/liên kết có mã niêm yết riêng, biến số ngành của mã, "
+                        "bên liên quan chưa xác nhận sở hữu, hoặc chỉ nhắc tên minh họa",
+    Relevance.KLQ.value: "Mã chỉ có tên trong danh sách, hoặc tin vĩ mô tổng quát không phân tích riêng mã",
+}
+IMPACT_OPTIONS = {
+    Impact.TICH_CUC.value: "Thông tin MỚI có yếu tố thuận lợi rõ cho mã (tăng trưởng KQKD, hợp đồng, cổ tức, "
+                           "mở rộng có hiệu quả, dòng vốn vào) và không có yếu tố bất lợi tương đương",
+    Impact.TIEU_CUC.value: "Thông tin MỚI có yếu tố bất lợi rõ cho mã (giảm/lỗ, pha loãng thuần, nợ quá hạn, "
+                           "phạt, dòng vốn rút) và không có yếu tố thuận lợi tương đương",
+    Impact.TRUNG_LAP.value: "Hai chiều lợi/hại tương đương mà bài không lượng hóa tác động ròng; thiếu số liệu "
+                            "xác định hướng; sự kiện kỹ thuật/hành chính; chuyển giao nội bộ tập đoàn",
+}
+
+
 def _facts_state(article: Article, facts: ArticleFacts, ticker: str) -> str:
     return (f"Mã đang xét: {ticker}\nTiêu đề: {article.title}\n"
-            f"Dữ kiện đã trích (JSON):\n{facts.model_dump_json(indent=1)}\n\n"
+            f"Dữ kiện đã trích (JSON):\n{facts.model_dump_json(exclude_defaults=True)}\n\n"
             f"<bai_bao>\n{article.content}\n</bai_bao>")
 
 
@@ -84,11 +103,10 @@ def node_relevance(state: TickerState) -> dict:
     pre = evaluate_ticker(m, facts, profile, article.published_at)
     if pre.relevance is not None:
         return {"relevance": pre.relevance, "relevance_ids": pre.relevance_rule_ids, "relevance_conf": 1.0}
-    options = [r.value for r in Relevance]
-    answer, probs = decision_model().choice(
+    d = decision_model().choice(
         _facts_state(article, facts, m.ticker),
-        f"Mức độ liên quan của bài với mã {m.ticker} theo Mục 2 của tiêu chí?", options)
-    return {"relevance": Relevance(answer), "relevance_ids": ["G-5"], "relevance_conf": probs[answer]}
+        f"Mức độ liên quan của bài với mã {m.ticker} theo Mục 2 của tiêu chí?", RELEVANCE_OPTIONS)
+    return {"relevance": Relevance(d.answer), "relevance_ids": ["G-5"], "relevance_conf": d.confidence}
 
 
 def node_rules(state: TickerState) -> dict:
@@ -108,13 +126,13 @@ def node_impact(state: TickerState) -> dict:
         impact_rule_ids=o.impact_rule_ids, computed=o.computed, evidence=o.evidence, flags=list(o.flags),
     )
     if o.relevance != Relevance.KLQ and o.event is not None and o.impact is None:
-        options = [i.value for i in Impact]
-        hint = f" Gợi ý quy tắc cần xét: {o.impact_hint}." if o.impact_hint else ""
-        answer, probs = decision_model().choice(
+        hint = f" Gợi ý quy tắc cần xét: {o.impact_hint} – {RULES.get(o.impact_hint, '')}." if o.impact_hint else ""
+        d = decision_model().choice(
             _facts_state(article, state["facts"], o.ticker),
             f"Ảnh hưởng của thông tin mới trong bài đến mã {o.ticker} theo Mục 4 của tiêu chí "
-            f"(sự kiện chính: [{o.event.event_type}] {o.event.description})?{hint}", options)
-        result.impact, result.impact_confidence = Impact(answer), probs[answer]
+            f"(sự kiện chính: [{o.event.event_type}] {o.event.description})?{hint}", IMPACT_OPTIONS)
+        answer = d.answer
+        result.impact, result.impact_confidence = Impact(answer), d.confidence
         if answer == Impact.TRUNG_LAP.value and o.impact_hint:
             result.impact_rule_ids = [o.impact_hint]
     if min(result.priority_confidence, result.impact_confidence) < config.LOW_CONFIDENCE:

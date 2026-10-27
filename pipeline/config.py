@@ -15,6 +15,8 @@ THINKING = os.environ.get("CLAUDE_THINKING", "adaptive")
 
 # DecisionModel backend: "claude" or "jev" (needs TYPESAFE_API_KEY).
 DECISION_BACKEND = os.environ.get("DECISION_BACKEND", "jev" if os.environ.get("TYPESAFE_API_KEY") else "claude")
+JEV_MODEL = os.environ.get("TYPESAFE_DEFAULT_MODEL", "jev-latest")
+JEV_TIMEOUT = float(os.environ.get("JEV_TIMEOUT", "60"))
 
 LOW_CONFIDENCE = float(os.environ.get("LOW_CONFIDENCE", "0.6"))
 MAX_TOKENS = 16000

@@ -228,19 +228,20 @@ def write_csv(rows: list[Row]) -> None:
     cols = ["Lần", "STT", "Mã", "Title", "Priority (pipeline)", "Ảnh hưởng (pipeline)", "Priority Expected",
             "Ảnh hưởng Expected", "Kết quả Priority", "Kết quả Ảnh hưởng", "Relevance", "Loại sự kiện",
             "Mã quy tắc", "Lý giải Relevance", "Lý giải Priority", "Lý giải Ảnh hưởng", "Cờ", "Lỗi",
-            "Thời gian (s)", "Số lần gọi", "Input", "Cache đọc", "Cache ghi", "Output"]
+            "Thời gian (s)", "Claude gọi", "Input", "Cache đọc", "Cache ghi", "Output", "Jev gọi", "Jev input"]
     with open(OUT / "results.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.writer(fh)
         w.writerow(cols)
         for r in rows:
-            p, t = r.pred, sum_tokens(r.calls)
+            p, t, j = r.pred, sum_tokens(r.calls), sum_tokens(r.calls, "jev")
+            n_jev = sum(c.get("provider") == "jev" for c in r.calls)
             w.writerow([r.run, r.stt, r.ticker, r.title, p.get("priority", ""), p.get("impact", ""), r.exp_priority,
                         r.exp_impact, "" if r.error else ("Pass" if r.pri_pass else "Fail"),
                         "" if r.error else ("Pass" if r.imp_pass else "Fail"), p.get("relevance", ""),
                         p.get("event_type", ""), p.get("rule_ids", ""), p.get("relevance_reason", ""),
                         p.get("priority_reason", ""), p.get("impact_reason", ""), p.get("flags", ""), r.error,
-                        r.seconds, len(r.calls), t["input_tokens"], t["cache_read_input_tokens"],
-                        t["cache_creation_input_tokens"], t["output_tokens"]])
+                        r.seconds, len(r.calls) - n_jev, t["input_tokens"], t["cache_read_input_tokens"],
+                        t["cache_creation_input_tokens"], t["output_tokens"], n_jev, j["input_tokens"]])
 
 
 def main(argv=None) -> int:

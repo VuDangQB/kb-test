@@ -168,12 +168,13 @@ def th_issuance(ev: EventFact, ctx: Ctx) -> TierResult:
 
 
 def th_dividend(ev: EventFact, ctx: Ctx) -> TierResult:
+    # Dùng lợi suất bài nêu; không tự tính DPS / thị giá (giống hệ thống chính).
     y, payout = fig(ev, "dividend_yield_pct"), fig(ev, "payout_pct")
     computed = {}
-    if y is None:
-        dps = fig(ev, "dps_vnd")
-        price = fig(ev, "share_price_vnd") or ctx.fin.get("share_price")
-        y = _ratio(dps, price)
+    # if y is None:
+    #     dps = fig(ev, "dps_vnd")
+    #     price = fig(ev, "share_price_vnd") or ctx.fin.get("share_price")
+    #     y = _ratio(dps, price)
     if y is not None:
         computed["Lợi suất cổ tức"] = pct(y)
     if payout is not None:

@@ -94,7 +94,8 @@ uv run python -m eval.run_eval "/mnt/c/Users/VuDang/Downloads/KB Test Template f
 | `CLAUDE_MODEL` | `claude-sonnet-5-5` | Model cho extract / write / quyết định |
 | `EFFORT_EXTRACT`, `EFFORT_WRITE`, `EFFORT_DECISION` | `medium` | Effort cho từng node |
 | `CLAUDE_THINKING` | `adaptive` | `between_tools` để bỏ bước suy nghĩ trước khi trả lời |
-| `DECISION_BACKEND` | `claude` (hoặc `jev` nếu có `TYPESAFE_API_KEY`) | JevBackend chưa nối API |
+| `DECISION_BACKEND` | `jev` nếu có `TYPESAFE_API_KEY`, ngược lại `claude` | Mô hình cho các câu hỏi lựa chọn (Relevance khi vai trò không rõ, Ảnh hưởng khi tiêu chí cần phán đoán) |
+| `TYPESAFE_DEFAULT_MODEL` | `jev-latest` | Model Jev (`jev-latest` hoặc `jev-preview`) |
 | `LOW_CONFIDENCE` | `0.6` | Ngưỡng gắn cờ `low_confidence` |
 
 ## Test (không cần API key)

@@ -5,6 +5,7 @@ from datetime import date
 import pytest
 
 import pipeline.graph as graph
+from pipeline.decision import Decision
 from pipeline.schemas import (Article, ArticleFacts, EventFact, Figure, Impact, Priority,
                               Reasons, Relevance, TickerMention)
 
@@ -37,7 +38,8 @@ FACTS = ArticleFacts(
 
 class FakeDM:
     def choice(self, state, question, options):
-        return options[0], {o: (1.0 if i == 0 else 0.0) for i, o in enumerate(options)}
+        first = next(iter(options))
+        return Decision(first, {o: float(o == first) for o in options}, 1.0)
 
 
 def fake_write(article, r, event_desc, feedback=None):
@@ -81,3 +83,27 @@ def test_validation_failure_retries_then_flags(monkeypatch):
     assert all("validation_failed" in r.flags for r in results)
     assert len(calls) == 2 * len(results)          # one retry per ticker
     assert any(fb for fb in calls)                 # retry received the validation errors
+
+
+def test_jev_backend_maps_choice_answer(monkeypatch):
+    from types import SimpleNamespace
+
+    from pipeline import llm
+    from pipeline.decision import JevBackend
+
+    class FakeClient:
+        def system_one(self, state, questions):
+            q = questions["q"]
+            assert set(q.criteria) == {"Tích cực", "Tiêu cực", "Trung lập"} and "Mã đang xét" in state
+            answer = SimpleNamespace(choice="Trung lập", confidence=0.42,
+                                     probabilities={"Tích cực": 0.1, "Tiêu cực": 0.3, "Trung lập": 0.6})
+            return SimpleNamespace(choices={"q": answer}, model="jev-test",
+                                   usage=SimpleNamespace(input_tokens=1200, output_tokens=40))
+
+    jev = JevBackend(model="jev-test")
+    monkeypatch.setitem(jev.__dict__, "_client", FakeClient())
+    with llm.collect() as calls:
+        d = jev.choice("Mã đang xét: NVL\n...", "Ảnh hưởng?", graph.IMPACT_OPTIONS)
+    assert (d.answer, d.confidence) == ("Trung lập", 0.42)
+    assert abs(sum(d.probabilities.values()) - 1) < 1e-9
+    assert calls[0]["provider"] == "jev" and calls[0]["input_tokens"] == 1200

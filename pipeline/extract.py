@@ -17,6 +17,7 @@ Nguyên tắc:
 - Mỗi con số phải kèm `quote` là cụm trích NGUYÊN VĂN từ bài (giữ nguyên dấu chấm/phẩy, đơn vị) chứa con số đó.
 - Quy đổi `value` về đơn vị gốc: tiền về VND đầy đủ (8.007 tỷ đồng = 8007000000000; 125 triệu USD giữ đơn vị USD và ghi unit="USD"), số cổ phiếu về số cổ phiếu, phần trăm là số thường (33,3% → 33.3). Chỉ dùng metric "*_vnd" khi giá trị là VND.
 - Số âm cho giảm/bán ròng (khối ngoại bán ròng 107 tỷ → foreign_net_vnd = -107000000000).
+- Các chỉ tiêu phần trăm (revenue_growth_pct, npat_growth_pct, plan_completion_pct, dividend_yield_pct, payout_pct, issue_pct, kpi_yoy_pct...): CHỈ điền khi bài NÊU SẴN con số phần trăm đó; không tự tính từ số tuyệt đối. Bài chỉ có số tuyệt đối (VD lãi 2.800 tỷ, cùng kỳ lỗ) thì bỏ trống chỉ tiêu phần trăm.
 - Tách các sự kiện khác nhau trong bài thành các event riêng. Đánh dấu `is_new_info=false` cho phần bối cảnh/nhắc lại; `is_update_of_announced_event=true` khi bài chỉ cập nhật tiến độ/thủ tục (gia hạn, chốt quyền, ngày GDKHQ, kết quả giao dịch đã đăng ký) của sự kiện đã công bố trước đó.
 - Chỉ đặt các cờ ngữ nghĩa (control_change, intra_group_transfer, offsetting_factor, ...) = true khi bài có căn cứ rõ ràng.
 - `subject_entity`: dùng đúng tên thực thể trong hồ sơ mã nếu khớp (VD "Điện Máy Xanh", "Masan High-Tech Materials").

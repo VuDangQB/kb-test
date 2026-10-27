@@ -10,7 +10,7 @@ from typing import TypeVar
 import anthropic
 from pydantic import BaseModel
 
-from . import config
+from . import config, tracing
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -20,6 +20,18 @@ USAGE = {"calls": 0, "input_tokens": 0, "output_tokens": 0,
 CALLS: list[dict] = []
 _usage_lock = threading.Lock()
 _collector: ContextVar[list[dict] | None] = ContextVar("llm_calls", default=None)
+
+
+def record(stage: str, seconds: float, provider: str, *, input_tokens: int = 0, output_tokens: int = 0,
+           cache_read_input_tokens: int = 0, cache_creation_input_tokens: int = 0) -> None:
+    """Log one model call (Claude or Jev) for timing/token reports."""
+    entry = {"stage": stage, "provider": provider, "seconds": round(seconds, 2), "input_tokens": input_tokens,
+             "output_tokens": output_tokens, "cache_read_input_tokens": cache_read_input_tokens,
+             "cache_creation_input_tokens": cache_creation_input_tokens}
+    with _usage_lock:
+        CALLS.append(entry)
+        if (calls := _collector.get()) is not None:
+            calls.append(entry)
 
 
 @contextmanager
@@ -69,26 +81,23 @@ def parse(system_blocks: list[str], user: str, schema: type[T], *, effort: str,
     system = [{"type": "text", "text": text} for text in system_blocks]
     system[-1]["cache_control"] = {"type": "ephemeral"}
     started = time.perf_counter()
-    resp = client().messages.parse(
-        model=config.CLAUDE_MODEL,
-        max_tokens=max_tokens,
-        system=system,
-        messages=[{"role": "user", "content": user}],
-        output_format=schema,
-        thinking=_thinking(effort),
-        output_config={"effort": effort},
-    )
-    seconds = time.perf_counter() - started
+    with tracing.under_current_node():
+        resp = client().messages.parse(
+            model=config.CLAUDE_MODEL,
+            max_tokens=max_tokens,
+            system=system,
+            messages=[{"role": "user", "content": user}],
+            output_format=schema,
+            thinking=_thinking(effort),
+            output_config={"effort": effort},
+        )
     tokens = {key: getattr(resp.usage, key, 0) or 0 for key in
               ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")}
     with _usage_lock:
         USAGE["calls"] += 1
         for key, n in tokens.items():
             USAGE[key] += n
-        record = {"stage": stage, "seconds": round(seconds, 2), **tokens}
-        CALLS.append(record)
-        if (calls := _collector.get()) is not None:
-            calls.append(record)
+    record(stage, time.perf_counter() - started, "claude", **tokens)
 
     if resp.stop_reason in ("refusal", "max_tokens", "model_context_window_exceeded"):
         category = getattr(resp.stop_details, "category", None) if resp.stop_details else None
