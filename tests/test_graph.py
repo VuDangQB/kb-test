@@ -104,6 +104,6 @@ def test_jev_backend_maps_choice_answer(monkeypatch):
     monkeypatch.setitem(jev.__dict__, "_client", FakeClient())
     with llm.collect() as calls:
         d = jev.choice("Mã đang xét: NVL\n...", "Ảnh hưởng?", graph.IMPACT_OPTIONS)
-    assert (d.answer, d.confidence) == ("Trung lập", 0.42)
+    assert d.answer == "Trung lập" and abs(d.confidence - 0.6) < 1e-9  # probability of the answer
     assert abs(sum(d.probabilities.values()) - 1) < 1e-9
     assert calls[0]["provider"] == "jev" and calls[0]["input_tokens"] == 1200

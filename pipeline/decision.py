@@ -15,7 +15,7 @@ from . import config, llm, tracing
 class Decision:
     answer: str
     probabilities: dict[str, float]   # every option, sums to 1
-    confidence: float                 # how sure the model is; < config.LOW_CONFIDENCE → flag low_confidence
+    confidence: float                 # probability of `answer`; < config.LOW_CONFIDENCE → flag low_confidence
 
 
 class DecisionModel(Protocol):
@@ -72,8 +72,8 @@ class JevBackend:
 
     @cached_property
     def _client(self):
-        from typesafe_sdk import TypeSafeClient  # reads TYPESAFE_API_KEY
-        return TypeSafeClient(model=self.model, timeout=config.JEV_TIMEOUT)
+        from .jev_scorecard import client
+        return client()
 
     def choice(self, state: str, question: str, options: dict[str, str]) -> Decision:
         from typesafe_sdk import Choice
@@ -92,7 +92,7 @@ class JevBackend:
                    input_tokens=resp.usage.input_tokens or 0, output_tokens=resp.usage.output_tokens or 0)
         probs = _normalize(ans.probabilities, list(options))
         answer = ans.choice if ans.choice in probs else max(probs, key=probs.get)
-        return Decision(answer, probs, float(ans.confidence))
+        return Decision(answer, probs, probs[answer])
 
 
 def make_decision_model(criteria: str) -> DecisionModel:

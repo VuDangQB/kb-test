@@ -35,7 +35,7 @@ Relevance = Không liên quan → không gán Priority, Ảnh hưởng; bài kh�
 | G-3 | Không có bằng chứng thì không có kết luận. Mọi con số dùng để kết luận phải trích được từ bài (hoặc từ hồ sơ mã ở Mục 6, ghi rõ nguồn). | v1 |
 | G-4 | **Chấm theo thông tin mới của bài.** Bối cảnh nhắc lại (phương án đã công bố, KQKD kỳ trước, lịch sử) không làm tăng Priority. Bài chỉ cập nhật tiến độ/thủ tục của sự kiện đã công bố → áp `P-MOD-1`. | KB#10, KB#22 |
 | G-5 | **Chấm theo góc nhìn của mã đang xét.** Một bài có thể cho nhãn khác nhau với từng mã. Sự kiện xảy ra ở công ty con/liên kết có mã riêng chỉ được tính phần tác động lên mã đang xét mà bài định lượng được. | KB#15, KB#16 |
-| G-6 | Bài có nhiều sự kiện về cùng một mã: Priority theo sự kiện **mới** quan trọng nhất; Ảnh hưởng theo tác động ròng của các sự kiện mới (xem `I-TL-a`). | ĐX |
+| G-6 | Bài có nhiều sự kiện về cùng một mã: Priority theo **sự kiện trọng tâm** của bài (G-9); không xác định được trọng tâm thì theo sự kiện **mới** quan trọng nhất; Ảnh hưởng theo tác động ròng của các sự kiện mới (xem `I-TL-a`). | ĐX |
 | G-7 | Số liệu mâu thuẫn trong bài (hoặc giữa bài và hồ sơ mã) → không dùng số đó làm căn cứ lên bậc; ghi cờ "số liệu mâu thuẫn" trong lý giải và trong Summary. | Overview E |
 | G-8 | Mẫu số: ưu tiên mẫu số có trong bài; nếu bài không có, được dùng số liệu trong hồ sơ mã (Mục 6) **tại thời điểm đăng bài**, và phải ghi nguồn mẫu số. | ĐX |
 | G-9 | **Loại sự kiện theo trọng tâm của toàn bài**, không theo một đoạn hay một con số riêng lẻ. Bài giải thích/phân tích diễn biến giá nêu nhiều nguyên nhân (dòng tiền, KQKD đã công bố, rủi ro, nhận định CTCK, định giá) mà không có sự kiện mới → A24; số liệu trong bài chỉ dùng làm dẫn chứng. | KB#VD (sửa 28/10/2026) |

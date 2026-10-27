@@ -18,7 +18,7 @@ Nguyên tắc:
 - Quy đổi `value` về đơn vị gốc: tiền về VND đầy đủ (8.007 tỷ đồng = 8007000000000; 125 triệu USD giữ đơn vị USD và ghi unit="USD"), số cổ phiếu về số cổ phiếu, phần trăm là số thường (33,3% → 33.3). Chỉ dùng metric "*_vnd" khi giá trị là VND.
 - Số âm cho giảm/bán ròng (khối ngoại bán ròng 107 tỷ → foreign_net_vnd = -107000000000).
 - Các chỉ tiêu phần trăm (revenue_growth_pct, npat_growth_pct, plan_completion_pct, dividend_yield_pct, payout_pct, issue_pct, kpi_yoy_pct...): CHỈ điền khi bài NÊU SẴN con số phần trăm đó; không tự tính từ số tuyệt đối. Bài chỉ có số tuyệt đối (VD lãi 2.800 tỷ, cùng kỳ lỗ) thì bỏ trống chỉ tiêu phần trăm.
-- Tách các sự kiện khác nhau trong bài thành các event riêng. Đánh dấu `is_new_info=false` cho phần bối cảnh/nhắc lại; `is_update_of_announced_event=true` khi bài chỉ cập nhật tiến độ/thủ tục (gia hạn, chốt quyền, ngày GDKHQ, kết quả giao dịch đã đăng ký) của sự kiện đã công bố trước đó.
+- LIỆT KÊ ĐẦY ĐỦ mọi sự kiện/thông tin về các mã watchlist có trong bài, mỗi thông tin có thể đứng riêng thành một tin là một event: sự kiện chính, chi tiết/số liệu đi kèm, thông tin được đặt cạnh để so sánh hoặc bù trừ, nhận định của CTCK, bối cảnh và số liệu nhắc lại. KHÔNG gộp, KHÔNG bỏ bớt và KHÔNG cần quyết định event nào là chính: bước sau sẽ xác định ranh giới và vai trò của từng event. Mỗi event giữ số liệu và câu trích của riêng nó. Đánh dấu `is_new_info=false` cho phần bối cảnh/nhắc lại; `is_update_of_announced_event=true` khi bài chỉ cập nhật tiến độ/thủ tục (gia hạn, chốt quyền, ngày GDKHQ, kết quả giao dịch đã đăng ký) của sự kiện đã công bố trước đó.
 - Chỉ đặt các cờ ngữ nghĩa (control_change, intra_group_transfer, offsetting_factor, ...) = true khi bài có căn cứ rõ ràng.
 - `subject_entity`: dùng đúng tên thực thể trong hồ sơ mã nếu khớp (VD "Điện Máy Xanh", "Masan High-Tech Materials").
 
@@ -70,6 +70,10 @@ def article_message(article: Article) -> str:
 def extract(article: Article) -> ArticleFacts:
     facts = llm.parse(system_blocks(), article_message(article), ArticleFacts, effort=config.EFFORT["extract"],
                       stage="extract")
+    for ev in facts.events:  # a percentage metric must quote a percentage from the article (no computed %)
+        for f in ev.figures:
+            if f.metric.endswith("_pct") and "%" not in f.quote and "phần trăm" not in f.quote.lower():
+                f.metric = "other"
     watch = {t.upper() for t in article.watchlist}
     seen, mentions = set(), []
     for m in facts.ticker_mentions:

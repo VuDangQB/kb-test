@@ -120,3 +120,17 @@ def test_insider_floor_and_control_change():
 def test_missing_denominator_is_flagged_not_guessed():
     out = run("MSN", "party", ev("A12", "Masan", [f("investment_value_vnd", 500 * TY)]))
     assert out.priority == TB and "missing_denominator" in out.flags
+
+
+def test_index_exclusion_is_neutral_when_offset_by_fundamentals_with_numbers():
+    excluded = ev("A27", "Thế Giới Di Động")
+    bhx = EventFact(event_id="e2", event_type="A02", description="BHX +32% (đã công bố)", subject_entity="Bách Hóa Xanh",
+                    is_new_info=False, is_update_of_announced_event=False, figures=[f("kpi_yoy_pct", 32)])
+    facts = ArticleFacts(events=[excluded, bhx],
+                         ticker_mentions=[TickerMention(ticker="MWG", role="subject", event_ids=["e1", "e2"])])
+    m = facts.ticker_mentions[0]
+    out = evaluate_ticker(m, facts, load_profiles()["MWG"], date(2026, 9, 1))
+    assert out.event.event_type == "A27" and out.priority == Priority.TB
+    assert out.impact == Impact.TRUNG_LAP and out.impact_rule_ids == ["I-TL-a"]
+    alone = run("MWG", "subject", ev("A27", "Thế Giới Di Động"))
+    assert alone.impact == Impact.TIEU_CUC and alone.impact_rule_ids == ["I-YT-8"]

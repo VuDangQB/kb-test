@@ -94,7 +94,7 @@ EventType = Literal[
 class EventFact(BaseModel):
     event_id: str
     event_type: EventType
-    description: str = Field(description="1 câu mô tả sự kiện")
+    description: str = Field(description="1 câu mô tả sự kiện, đủ để hiểu khi đọc riêng (nêu chủ thể và nội dung chính)")
     subject_entity: str = Field(description="Thực thể là chủ thể sự kiện, đúng tên trong hồ sơ mã nếu có")
     parties: list[str] = Field(default_factory=list, description="Các bên tham gia (mua, bán, đối tác, nhận vốn)")
     is_new_info: bool = Field(description="False nếu chỉ là bối cảnh/nhắc lại thông tin đã công bố")
@@ -149,6 +149,11 @@ class ArticleFacts(BaseModel):
 # Output
 # ---------------------------------------------------------------------------
 
+# Role of an extracted event in the article's story about one ticker (event boundaries, judged by Jev).
+ROLE_FOCUS, ROLE_DETAIL, ROLE_OFFSET, ROLE_OTHER, ROLE_BACKGROUND = (
+    "Trọng tâm", "Chi tiết của trọng tâm", "Ngược chiều", "Tin khác", "Bối cảnh")
+
+
 class Evidence(BaseModel):
     quote: str
     metric: str = ""
@@ -177,6 +182,7 @@ class TickerResult(BaseModel):
     priority_reason: str = ""
     impact_reason: str = ""
     flags: list[str] = Field(default_factory=list)
+    scores: dict[str, dict] = Field(default_factory=dict, description="Điểm Jev theo câu hỏi (jev_scorecard)")
 
     @property
     def rule_ids(self) -> list[str]:

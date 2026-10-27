@@ -39,3 +39,18 @@ def test_cao_requires_direct():
     errs = check(result(relevance=Relevance.GT, priority=Priority.CAO,
                         relevance_reason="Gián tiếp (R-TT-1).", priority_reason="Cao (P-TH-02)."), CONTENT)
     assert any("Cao" in e for e in errs)
+
+
+def test_extract_demotes_percent_metrics_without_a_quoted_percentage(monkeypatch):
+    from pipeline import extract as ex
+    from pipeline.schemas import Article, ArticleFacts, EventFact, Figure
+    from datetime import date
+    facts = ArticleFacts(events=[EventFact(
+        event_id="E1", event_type="A01", description="d", subject_entity="NVL", is_new_info=True,
+        is_update_of_announced_event=False, figures=[
+            Figure(metric="npat_growth_pct", value=2.8e12, unit="VND", quote="Lợi nhuận sau thuế ước hơn 2.8 ngàn tỷ"),
+            Figure(metric="revenue_growth_pct", value=200, unit="%", quote="tăng khoảng 200% so với cùng kỳ")])],
+        ticker_mentions=[])
+    monkeypatch.setattr(ex.llm, "parse", lambda *a, **k: facts)
+    out = ex.extract(Article(title="t", published_at=date(2026, 10, 20), content="c"))
+    assert [f.metric for f in out.events[0].figures] == ["other", "revenue_growth_pct"]

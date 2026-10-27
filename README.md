@@ -87,6 +87,17 @@ uv run python -m eval.run_eval "/mnt/c/Users/VuDang/Downloads/KB Test Template f
   mục 8 có thời gian và token mỗi bài.
 - Bài không tải được: đặt nội dung vào `eval/cache/manual/<sha1(url)>.txt`. Dòng đầu có thể ghi `date: YYYY-MM-DD`.
 
+## Jev scorecard
+
+Khi `DECISION_BACKEND=jev`, mỗi bài có thêm **1 lần gọi Jev** (khoảng 0,3 giây). Lần gọi này chấm cho mọi mã: relevance, sự kiện trọng tâm, tin mới, chỉ là cập nhật, có số liệu, yếu tố ngược chiều, Priority, Ảnh hưởng và mức tác động −2…+2.
+
+- **Jev quyết:** sự kiện trọng tâm, Relevance khi vai trò không rõ, Ảnh hưởng khi tiêu chí cần phán đoán, hạ Thấp khi bài thiếu số.
+- **Code quyết** các nhãn còn lại. Jev chấm song song; khác code thì gắn cờ `jev_disagrees`.
+- **Xem điểm:**
+  - Trường `scores` trong kết quả.
+  - Khối "Điểm Jev" khi chạy `run_one`.
+  - Mục 9 của `eval/out/report.md`: độ chính xác của Jev, tỷ lệ trùng với pipeline, độ chính xác theo xác suất.
+
 ## Cấu hình (biến môi trường)
 
 | Biến | Mặc định | Ý nghĩa |

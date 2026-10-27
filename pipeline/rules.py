@@ -8,8 +8,8 @@ from datetime import date
 
 from .catalog import CATALOG, EventSpec
 from .profiles import Profile
-from .schemas import (ArticleFacts, EventFact, Evidence, Impact, Priority,
-                      Relevance, TickerMention)
+from .schemas import (ROLE_BACKGROUND, ROLE_DETAIL, ROLE_FOCUS, ROLE_OFFSET, ArticleFacts, EventFact, Evidence,
+                      Impact, Priority, Relevance, TickerMention)
 
 TB, CAO, THAP = Priority.TB, Priority.CAO, Priority.THAP
 POS, NEG, NEU = Impact.TICH_CUC, Impact.TIEU_CUC, Impact.TRUNG_LAP
@@ -22,6 +22,8 @@ class Ctx:
     published_at: date
     fin: dict
     listed_sub_event: bool = False
+    others: list = field(default_factory=list)  # other events about this ticker in the same article
+    jev_offsetting: bool = False  # Jev: the article sets opposite factors with numbers against each other
 
 
 @dataclass
@@ -324,7 +326,7 @@ def priority_for_event(ev: EventFact, spec: EventSpec, relevance: Relevance, fac
 # ---------------------------------------------------------------------------
 
 def imp_results(ev: EventFact, ctx: Ctx) -> tuple[Impact | None, list[str], str]:
-    if ev.offsetting_factor:
+    if ev.offsetting_factor or ctx.jev_offsetting:
         return None, [], "I-TL-a"
     signs = [x for x in (fig(ev, "revenue_growth_pct"), fig(ev, "npat_growth_pct")) if x is not None]
     plan = fig(ev, "plan_completion_pct")
@@ -347,8 +349,9 @@ def imp_subsidiary(ev, ctx):
 
 def imp_kpi(ev, ctx):
     k = fig(ev, "kpi_yoy_pct")
-    if ev.offsetting_factor or k is None or k == 0:
-        return None, [], "I-TL-a" if ev.offsetting_factor else "I-TL-b"
+    offset = ev.offsetting_factor or ctx.jev_offsetting
+    if offset or k is None or k == 0:
+        return None, [], "I-TL-a" if offset else "I-TL-b"
     return (POS if k > 0 else NEG), ["I-YT-3"], ""
 
 
@@ -377,10 +380,23 @@ def imp_foreign(ev, ctx):
     return (POS if net > 0 else NEG), ["I-YT-8"], ""
 
 
+def imp_index_out(ev, ctx):
+    """A27: Tiêu cực, unless the article sets a positive fundamental with numbers against it (→ Trung lập)."""
+    if ev.offsetting_factor or ctx.jev_offsetting:
+        return NEU, ["I-TL-a"], ""
+    for o in ctx.others:
+        spec = CATALOG.get(o.event_type)
+        if not o.figures or spec is None or spec.impact in ("index_out", "DM") or isinstance(spec.impact, Impact):
+            continue
+        if IMPACT_HANDLERS[spec.impact](o, ctx)[0] == POS:
+            return NEU, ["I-TL-a"], ""
+    return NEG, ["I-YT-8"], ""
+
+
 IMPACT_HANDLERS = {
     "results": imp_results, "subsidiary": imp_subsidiary, "issuance": imp_issuance,
     "dividend": imp_dividend, "esop": imp_esop, "insider_sell": imp_insider_sell,
-    "foreign": imp_foreign, "kpi": imp_kpi,
+    "foreign": imp_foreign, "kpi": imp_kpi, "index_out": imp_index_out,
 }
 
 
@@ -407,9 +423,21 @@ def events_for(m: TickerMention, facts: ArticleFacts) -> list[EventFact]:
 
 
 def evaluate_ticker(m: TickerMention, facts: ArticleFacts, profile: Profile, published_at: date,
-                    relevance: Relevance | None = None, relevance_ids: list[str] | None = None) -> RuleOutcome:
-    """Apply v2 to one ticker. Pass `relevance` when it was resolved by the DecisionModel."""
-    ctx = Ctx(profile=profile, published_at=published_at, fin=profile.financials_at(published_at))
+                    relevance: Relevance | None = None, relevance_ids: list[str] | None = None,
+                    main_event_id: str | None = None, jev_offsetting: bool = False,
+                    event_roles: dict[str, str] | None = None) -> RuleOutcome:
+    """Apply v2 to one ticker.
+
+    `relevance`: pass when it was resolved by the DecisionModel.
+    `main_event_id`: the article's focus event for this ticker (G-9), chosen by Jev. Without it the
+    event with the highest priority wins (G-6).
+    `jev_offsetting`: Jev judged that the article sets opposite factors with numbers against each other
+    (used by exceptions such as A27 "có yếu tố cơ bản bù trừ có số liệu").
+    `event_roles`: Jev's event boundaries {event_id: role}. The focus event plus the figures of its
+    details is what gets scored; "Ngược chiều" events offset its impact; "Bối cảnh" events are ignored.
+    """
+    ctx = Ctx(profile=profile, published_at=published_at, fin=profile.financials_at(published_at),
+              jev_offsetting=jev_offsetting)
     if relevance is None:
         relevance, relevance_ids = decide_relevance(m, facts, ctx)
     out = RuleOutcome(ticker=m.ticker, relevance=relevance, relevance_rule_ids=relevance_ids or [])
@@ -422,8 +450,25 @@ def evaluate_ticker(m: TickerMention, facts: ArticleFacts, profile: Profile, pub
         out.flags.append("no_event")
         return out
 
+    focus = None
+    if event_roles and len(candidates) > 1:  # Jev drew the event boundaries
+        focus = (next((e for e in candidates if e.event_id == main_event_id), None)
+                 or next((e for e in candidates if event_roles.get(e.event_id) == ROLE_FOCUS), None))
+        if focus is not None:
+            role = lambda e: event_roles.get(e.event_id, "")  # noqa: E731
+            # Only details of the same event type lend their figures (a merged KPI must not lift an A27).
+            details = [e for e in candidates if e is not focus and role(e) == ROLE_DETAIL
+                       and e.event_type == focus.event_type]
+            focus = focus.model_copy(update={"figures": focus.figures + [f for d in details for f in d.figures]})
+            ctx.jev_offsetting = ctx.jev_offsetting or any(role(e) == ROLE_OFFSET for e in candidates)
+            fresh = [focus]
+            candidates = [focus] + [e for e in candidates
+                                    if e.event_id != focus.event_id and role(e) not in (ROLE_DETAIL, ROLE_BACKGROUND)]
+    elif len(fresh) > 1:
+        focus = next((e for e in fresh if e.event_id == main_event_id), None)
+
     best: tuple[EventFact, TierResult] | None = None
-    for ev in fresh:
+    for ev in [focus] if focus else fresh:
         ctx.listed_sub_event = is_listed_sub_event(ev, ctx)
         res = priority_for_event(ev, CATALOG[ev.event_type], relevance, facts, ctx)
         if best is None or res.tier.rank > best[1].tier.rank:
@@ -434,11 +479,14 @@ def evaluate_ticker(m: TickerMention, facts: ArticleFacts, profile: Profile, pub
 
     out.event, out.priority, out.priority_rule_ids = ev, res.tier, res.rule_ids
     out.computed, out.flags = res.computed, list(res.flags)
-    if len(fresh) > 1:
-        out.priority_rule_ids.append("G-4")
+    if focus is not None:
+        out.priority_rule_ids.append("G-9")
+    elif len(fresh) > 1:
+        out.priority_rule_ids.append("G-6")
     if ctx.listed_sub_event:
         out.priority_rule_ids.append("G-5")
 
+    ctx.others = [e for e in candidates if e.event_id != ev.event_id]
     out.impact, out.impact_rule_ids, out.impact_hint = impact_for_event(ev, spec, facts, ctx)
     out.evidence = [Evidence(quote=f.quote, metric=f.metric) for f in ev.figures]
     if facts.conflicting_numbers:

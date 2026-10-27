@@ -25,7 +25,8 @@ import openpyxl
 
 from eval.fetch import fetch
 from eval.runstats import agreement, spread, sum_tokens, timing_summary
-from pipeline import Article, config, evaluate, tracing
+from pipeline import Article, config, tracing
+from pipeline.graph import evaluate_detailed
 from pipeline import llm
 from pipeline.llm import USAGE, LLMStopError
 
@@ -47,6 +48,7 @@ class Row:
     pred: dict = field(default_factory=dict)
     error: str = ""
     run: int = 1
+    events: str = ""
     seconds: float = 0.0
     calls: list = field(default_factory=list)
 
@@ -81,6 +83,21 @@ def read_kb(path: str) -> list[Row]:
     return rows
 
 
+def events_summary(facts, ticker: str) -> str:
+    """One line per extracted event of `ticker`: id [type] (cũ) description {metric=value; ...} + Jev role."""
+    if facts is None:
+        return ""
+    mention = next((m for m in facts.ticker_mentions if m.ticker == ticker), None)
+    ids = set(mention.event_ids) if mention and mention.event_ids else {e.event_id for e in facts.events}
+    lines = []
+    for e in facts.events:
+        if e.event_id in ids:
+            figs = "; ".join(f"{f.metric}={f.value:g}" for f in e.figures)
+            lines.append(f"{e.event_id} [{e.event_type}]{'' if e.is_new_info else ' (cũ)'} {e.description}"
+                         + (f" {{{figs}}}" if figs else ""))
+    return "\n".join(lines)
+
+
 def run_row(row: Row) -> Row:
     fetched = fetch(row.url, row.title)
     if fetched.text is None:
@@ -93,13 +110,14 @@ def run_row(row: Row) -> Row:
     try:
         with tracing.run_attributes(session_id=f"KB-{row.stt}-{SESSION}", metadata=meta,
                                     tags=[f"KB-{row.stt}", "run_eval"]), llm.collect() as calls:
-            results = evaluate(article)
+            results, facts = evaluate_detailed(article)
     except LLMStopError as exc:
         row.error = f"llm_stopped: {exc}"
         return row
     finally:
         row.seconds = round(time.perf_counter() - started, 2)
         row.calls = calls
+    row.events = events_summary(facts, row.ticker)
     match = next((r for r in results if r.ticker == row.ticker), None)
     if match is None:
         row.pred = {"relevance": "Không liên quan", "priority": "", "impact": ""}
@@ -115,6 +133,11 @@ def run_row(row: Row) -> Row:
         "priority_reason": match.priority_reason,
         "impact_reason": match.impact_reason,
         "flags": " | ".join(match.flags),
+        **{f"jev_{k}": match.scores.get(k, {}).get("answer", "") for k in ("priority", "impact", "main_event")},
+        **{f"jev_{k}_p": match.scores.get(k, {}).get("p", "") for k in ("priority", "impact", "main_event")},
+        "jev_impact_score": match.scores.get("impact_score", {}).get("score", ""),
+        "jev_roles": "; ".join(f"{eid}={ev['role']['answer']}({ev['role']['p']:.2f})"
+                               for eid, ev in match.scores.get("events", {}).items() if "role" in ev),
     }
     return row
 
@@ -168,7 +191,9 @@ def report(all_rows: list[Row], runs: int = 1) -> str:
                   f"- Quy tắc: {p.get('rule_ids', '')}", f"- Số liệu đã tính: {p.get('computed', '')}",
                   f"- Lý giải Priority: {p.get('priority_reason', '')}",
                   f"- Lý giải Ảnh hưởng: {p.get('impact_reason', '')}",
-                  f"- Cờ: {p.get('flags', '')}", ""]
+                  f"- Cờ: {p.get('flags', '')}",
+                  f"- Vai trò sự kiện (Jev): {p.get('jev_roles', '') or '-'}",
+                  "- Sự kiện đã trích:", *[f"  - {line}" for line in r.events.splitlines()], ""]
     errors = [r for r in rows if r.error]
     if errors:
         lines += ["## 6. Bài lỗi (không tính điểm)", ""]
@@ -176,10 +201,44 @@ def report(all_rows: list[Row], runs: int = 1) -> str:
         lines += ["", "Bài không tải được: đặt nội dung vào `eval/cache/manual/<sha1(url)>.txt` rồi chạy lại."]
     if runs > 1:
         lines += ["", *stability(all_rows, runs)]
+    lines += ["", *jev_section(real)]
     lines += ["", "## 8. Thời gian & token mỗi bài", "", "```", *timing_summary(
         [{"seconds": r.seconds, "calls": r.calls} for r in all_rows if not r.error]), "```",
               "", "Tổng:", f"```\n{json.dumps(USAGE, indent=1)}\n```"]
     return "\n".join(lines)
+
+
+def jev_section(real: list[Row]) -> list[str]:
+    """Jev's shadow labels vs Expected and vs the pipeline, plus accuracy by Jev probability."""
+    rows = [r for r in real if r.pred.get("jev_priority")]
+    if not rows:
+        return ["## 9. Jev chấm song song", "", "Không có điểm Jev (DECISION_BACKEND khác `jev` hoặc Jev lỗi)."]
+    lines = ["## 9. Jev chấm song song", "",
+             "| | Priority | Ảnh hưởng |", "|---|---|---|"]
+    exp = {"priority": lambda r: r.exp_priority, "impact": lambda r: r.exp_impact}
+    cells = {}
+    for k in ("priority", "impact"):
+        agree = [r for r in rows if r.pred["jev_" + k] == r.pred.get(k)]
+        differ = [r for r in rows if r.pred["jev_" + k] != r.pred.get(k)]
+        cells[k] = [
+            rate(sum(r.pred["jev_" + k] == exp[k](r) for r in rows), len(rows)),
+            rate(sum(r.pred.get(k) == exp[k](r) for r in rows), len(rows)),
+            rate(len(agree), len(rows)),
+            rate(sum(r.pred.get(k) == exp[k](r) for r in agree), len(agree)),
+            rate(sum(r.pred.get(k) == exp[k](r) for r in differ), len(differ)),
+        ]
+    for i, name in enumerate(["Jev đúng Expected", "Pipeline đúng Expected", "Jev trùng pipeline",
+                              "Pipeline đúng khi trùng Jev", "Pipeline đúng khi khác Jev"]):
+        lines.append(f"| {name} | {cells['priority'][i]} | {cells['impact'][i]} |")
+    lines += ["", "Độ chính xác của Jev theo xác suất đáp án:", "",
+              "| Xác suất Jev | Priority: số bài / Jev đúng | Ảnh hưởng: số bài / Jev đúng |", "|---|---|---|"]
+    for lo, hi in ((0, 0.5), (0.5, 0.7), (0.7, 1.01)):
+        row = []
+        for k in ("priority", "impact"):
+            b = [r for r in rows if r.pred.get(f"jev_{k}_p") != "" and lo <= float(r.pred[f"jev_{k}_p"]) < hi]
+            row.append(f"{len(b)} / {rate(sum(r.pred['jev_' + k] == exp[k](r) for r in b), len(b))}")
+        lines.append(f"| {lo:.1f}–{min(hi, 1):.1f} | {row[0]} | {row[1]} |")
+    return lines
 
 
 def stability(all_rows: list[Row], runs: int) -> list[str]:
@@ -228,7 +287,9 @@ def write_csv(rows: list[Row]) -> None:
     cols = ["Lần", "STT", "Mã", "Title", "Priority (pipeline)", "Ảnh hưởng (pipeline)", "Priority Expected",
             "Ảnh hưởng Expected", "Kết quả Priority", "Kết quả Ảnh hưởng", "Relevance", "Loại sự kiện",
             "Mã quy tắc", "Lý giải Relevance", "Lý giải Priority", "Lý giải Ảnh hưởng", "Cờ", "Lỗi",
-            "Thời gian (s)", "Claude gọi", "Input", "Cache đọc", "Cache ghi", "Output", "Jev gọi", "Jev input"]
+            "Thời gian (s)", "Claude gọi", "Input", "Cache đọc", "Cache ghi", "Output", "Jev gọi", "Jev input",
+            "Jev Priority", "Jev Priority p", "Jev Ảnh hưởng", "Jev Ảnh hưởng p", "Jev sự kiện trọng tâm",
+            "Jev mức tác động", "Sự kiện đã trích", "Jev vai trò sự kiện"]
     with open(OUT / "results.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.writer(fh)
         w.writerow(cols)
@@ -241,7 +302,10 @@ def write_csv(rows: list[Row]) -> None:
                         p.get("event_type", ""), p.get("rule_ids", ""), p.get("relevance_reason", ""),
                         p.get("priority_reason", ""), p.get("impact_reason", ""), p.get("flags", ""), r.error,
                         r.seconds, len(r.calls) - n_jev, t["input_tokens"], t["cache_read_input_tokens"],
-                        t["cache_creation_input_tokens"], t["output_tokens"], n_jev, j["input_tokens"]])
+                        t["cache_creation_input_tokens"], t["output_tokens"], n_jev, j["input_tokens"],
+                        p.get("jev_priority", ""), p.get("jev_priority_p", ""), p.get("jev_impact", ""),
+                        p.get("jev_impact_p", ""), p.get("jev_main_event", ""), p.get("jev_impact_score", ""),
+                        r.events, p.get("jev_roles", "")])
 
 
 def main(argv=None) -> int:

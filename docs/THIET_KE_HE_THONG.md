@@ -51,6 +51,11 @@ Một bài có thể cho nhiều kết quả. Ví dụ bản tin khối ngoại 
                  │ đọc cả bài → sự kiện, số liệu + câu trích, vai trò từng mã  │
                  └──────────────────────────┬────────────────────────────────┘
                                             │ ArticleFacts
+                 ┌──────────────────────────▼────────────────────────────────┐
+                 │ BƯỚC 1b JEV SCORECARD  (pipeline/jev_scorecard.py) — Jev   │
+                 │ 1 lần gọi: chấm mọi câu hỏi quyết định cho mọi mã, kèm xác suất│
+                 └──────────────────────────┬────────────────────────────────┘
+                                            │ scores
                          BƯỚC 2  FAN-OUT: mỗi mã watchlist có trong bài
                     ┌───────────────────────┼───────────────────────┐
                     ▼                       ▼                       ▼
@@ -58,10 +63,10 @@ Một bài có thể cho nhiều kết quả. Ví dụ bản tin khối ngoại 
              │  nhánh FPT  │         │  nhánh MSN  │   ...   │  nhánh HPG  │   (chạy song song)
              └──────┬──────┘         └─────────────┘         └─────────────┘
                     │
-   BƯỚC 3  RELEVANCE      code (bảng vai trò → nhãn); "unclear" → mô hình quyết định
-   BƯỚC 4  RULES          code: chọn sự kiện chính → ngưỡng → điều chỉnh bậc → sàn → Priority
+   BƯỚC 3  RELEVANCE      code (bảng vai trò → nhãn); "unclear" → Jev
+   BƯỚC 4  RULES          sự kiện trọng tâm: Jev (khi ≥ 2 sự kiện mới) → code: ngưỡng → điều chỉnh bậc → sàn
                           (Không liên quan → dừng nhánh)
-   BƯỚC 5  IMPACT         code nếu tiêu chí có đáp án cố định; còn lại → mô hình quyết định
+   BƯỚC 5  IMPACT         code nếu tiêu chí có đáp án; cần phán đoán → Jev; so với điểm Jev → cờ jev_disagrees
    BƯỚC 6  WRITE          Claude viết 3 lý giải cho nhãn đã chốt (không được đổi nhãn)
    BƯỚC 7  VALIDATE       code kiểm tra lý giải; sai → quay lại WRITE (tối đa 2 lần)
    BƯỚC 8  FINISH         gắn cờ, trả TickerResult
@@ -70,7 +75,14 @@ Một bài có thể cho nhiều kết quả. Ví dụ bản tin khối ngoại 
         list[TickerResult]  (sắp theo thứ tự watchlist)
 ```
 
-Phần điều phối dùng **LangGraph**: một graph cấp bài (extract → fan-out) và một graph con cho mỗi mã (bước 3–8). Các nhánh mã chạy song song bằng `Send`.
+Phần điều phối dùng **LangGraph**: một graph cấp bài (extract → jev_score → fan-out) và một graph con cho mỗi mã (bước 3–8). Các nhánh mã chạy song song bằng `Send`.
+
+**Chia việc giữa ba thành phần:**
+- **Claude:** đọc và viết (extract, write).
+- **Code:** áp ngưỡng và quy tắc của KB.
+- **Jev:**
+  - **Quyết** ở 4 chỗ cần phán đoán: sự kiện trọng tâm, relevance khi vai trò không rõ, Ảnh hưởng khi tiêu chí cần phán đoán, hạ Thấp khi bài thiếu số.
+  - **Chấm song song** mọi nhãn còn lại để có điểm debug và đánh giá.
 
 ### Bản đồ file
 
@@ -137,7 +149,7 @@ Kết quả thử trên 122 link: **119 lấy được**. 3 link cần nhập ta
 
 **Vào:** `Article`. **Ra:** `ArticleFacts`. **Ai làm:** Claude, 1 lần gọi mỗi bài.
 
-Claude **không gán nhãn** ở bước này. Nó chỉ điền một bảng dữ kiện có cấu trúc theo schema:
+Claude **không gán nhãn** ở bước này. Nó **liệt kê đầy đủ** mọi sự kiện về các mã trong bài, gồm tin chính, chi tiết đi kèm, thông tin đặt cạnh để so sánh, nhận định của CTCK và bối cảnh. Claude không gộp, không bỏ bớt và không quyết định sự kiện nào là chính; việc vạch ranh giới thuộc về Jev ở bước 1b. Một bài thường có 2–6 sự kiện. Mỗi sự kiện được điền vào một bảng dữ kiện có cấu trúc theo schema:
 
 - **Danh sách sự kiện** (`events`). Mỗi sự kiện gồm:
   - Loại sự kiện A01–A36. Theo nguyên tắc G-9, loại được xác định theo **trọng tâm của toàn bài**, không theo một đoạn riêng lẻ.
@@ -162,6 +174,28 @@ Sau khi nhận kết quả, code lọc chỉ giữ các mã thuộc watchlist.
 > - **E1 – A24**, bài giải thích diễn biến giá. Số liệu kèm câu trích: giá 56.900đ, khối ngoại bán 91 tỷ trong phiên và 14.700 tỷ từ đầu năm, P/E 12,5 lần. Cờ `offsetting_factor = true`.
 > - **E2 – A01**, kết quả kinh doanh 8 tháng. `is_new_info = false` vì đây là số đã công bố.
 > - FPT: `role = subject`.
+
+### Bước 1b — Jev scorecard: chấm điểm mọi quyết định
+
+**Vào:** bài và `ArticleFacts`. **Ra:** `scores[ticker][câu hỏi]`. **Ai làm:** Jev, **1 lần gọi mỗi bài** cho mọi mã (`pipeline/jev_scorecard.py`).
+
+Jev nhận tiêu đề, ngày đăng và nội dung bài. Mỗi mã có bộ câu hỏi riêng, mỗi lựa chọn kèm mô tả lấy từ tiêu chí:
+
+| Câu hỏi | Kiểu | Dùng để |
+|---|---|---|
+| `relevance` | Choice: Trực tiếp / Gián tiếp / Không liên quan | Quyết khi vai trò `unclear`; còn lại chấm song song |
+| `main_event` (khi mã có ≥ 2 sự kiện) | Choice: các sự kiện đã trích | **Quyết sự kiện trọng tâm (G-9)** |
+| Với **mỗi sự kiện**: `role` | Choice: Trọng tâm / Chi tiết của trọng tâm / Ngược chiều / Tin khác / Bối cảnh | **Vạch ranh giới sự kiện**: chi tiết cùng loại góp số liệu vào sự kiện trọng tâm; "Ngược chiều" là yếu tố bù trừ; "Bối cảnh" bị bỏ qua |
+| Với **mỗi sự kiện**: `impact` | Choice: Tích cực / Tiêu cực / Trung lập | Thấy từng sự kiện kéo theo hướng nào |
+| `is_new`, `is_update`, `has_numbers`, `offsetting` | Noul (có/không) | Chẩn đoán: tin mới, chỉ là cập nhật, có số liệu, có yếu tố ngược chiều |
+| `priority` | Choice: Cao / Trung bình / Thấp (định nghĩa mục 3.1) | Hạ Thấp khi thiếu số; còn lại chấm song song |
+| `impact` | Choice: Tích cực / Tiêu cực / Trung lập (định nghĩa mục 4) | Quyết khi cần phán đoán; còn lại chấm song song |
+| `impact_score` | Score 5 bậc, quy ra −2…+2 | Mức tác động liên tục để xếp hạng, theo dõi |
+
+Mỗi câu trả lời có đáp án, xác suất từng lựa chọn và `confidence` của Jev. Toàn bộ được lưu trong `TickerResult.scores`.
+Jev lỗi (mạng, API) thì bước này trả rỗng, và pipeline chạy tiếp bằng quy tắc như khi không có Jev.
+
+> **WL-091** (0,3 giây, khoảng 2.600 token): Priority Trung bình 0,65; Ảnh hưởng Tích cực 0,58 so với Trung lập 0,41; có yếu tố ngược chiều 0,60; mức tác động +0,73.
 
 ### Bước 2 — Fan-out: tách nhánh theo mã
 
@@ -194,7 +228,13 @@ Ngày niêm yết lấy từ hồ sơ mã. Vì vậy cùng một tin về Điệ
 
 Nếu Relevance là Không liên quan thì nhánh dừng tại đây và mã này không xuất hiện trong kết quả. Ngược lại, code làm 5 việc:
 
-1. **Chọn sự kiện để chấm.** Chỉ xét các sự kiện có thông tin mới (G-4), hoặc là bản cập nhật của sự kiện đã công bố. Nếu có nhiều sự kiện thì lấy sự kiện có Priority cao nhất (G-6).
+1. **Chọn sự kiện để chấm.** Chỉ xét các sự kiện có thông tin mới (G-4), hoặc là bản cập nhật của sự kiện đã công bố.
+   - Nếu còn từ 2 sự kiện trở lên thì lấy **sự kiện trọng tâm do Jev chọn (G-9)**. Ví dụ WL-091: Jev chọn chuyện FTSE thay vì BHX tăng trưởng.
+   - **Ranh giới do Jev vạch:**
+     - Sự kiện "Chi tiết của trọng tâm" **cùng loại** góp số liệu vào sự kiện trọng tâm. Ví dụ vốn điều lệ tách thành một sự kiện riêng vẫn dùng được làm mẫu số pha loãng.
+     - Có sự kiện "Ngược chiều" thì coi như có yếu tố bù trừ.
+     - Sự kiện "Bối cảnh" bị bỏ qua.
+   - Không có điểm Jev thì lấy sự kiện có Priority cao nhất (G-6).
 2. **Áp ngưỡng định lượng** theo loại sự kiện (mục 3.2 của tiêu chí). Ví dụ:
    - Phát hành: % pha loãng = số CP phát hành / số CP lưu hành. Trên 10% là Cao, 3–10% là Trung bình.
    - Kết quả kinh doanh: doanh thu tăng hơn 10%, lợi nhuận tăng hơn 15% hoặc vượt kế hoạch thì là Cao.
@@ -212,7 +252,8 @@ Nếu Relevance là Không liên quan thì nhánh dừng tại đây và mã nà
    - **P-MOD-4:** bài đa mã → tối đa Trung bình.
    - **P-MOD-5:** thiếu số liệu → tối đa Trung bình.
 4. **Sàn (P-SAN):** một số loại không bao giờ xuống dưới Trung bình, gồm cổ tức tiền mặt, giao dịch của người nội bộ, khối ngoại và khuyến nghị của CTCK.
-5. **Ghi lại** mã quy tắc đã áp, số đã tính và câu trích làm bằng chứng.
+5. **Thiếu số (P-MOD-5):** Priority đang là Trung bình. Nếu Jev chấm Thấp và loại sự kiện không có sàn thì hạ xuống Thấp, kèm cờ `priority_by_jev`.
+6. **Ghi lại** mã quy tắc đã áp, số đã tính và câu trích làm bằng chứng.
 
 > **WL-041:** E2 là thông tin cũ nên bị loại. Sự kiện chính là E1 (A24). A24 không có ngưỡng định lượng, bậc mặc định là **Trung bình (A24)**.
 
@@ -228,6 +269,10 @@ Mỗi loại sự kiện trong `catalog.py` khai báo cách xác định Ảnh h
 | Hàm quy tắc | Kết quả kinh doanh: tăng → Tích cực, giảm → Tiêu cực, có yếu tố ngược chiều → chuyển sang mô hình quyết định với gợi ý `I-TL-a`. Phát hành để trả nợ → Trung lập, pha loãng thuần → Tiêu cực. Cổ tức từ công ty con về công ty mẹ → Trung lập `I-TL-e`. Người nội bộ bán → Trung lập `I-TL-f` | Code xét số liệu và cờ |
 | Cần phán đoán (`DM`) | A12 (M&A, đầu tư lớn), A20 (ý kiến kiểm toán), A31 (tin ngành), A32 (vĩ mô có tên mã) | Hỏi mô hình quyết định |
 
+**Khi cần phán đoán**, nhãn lấy từ câu `impact` của Jev scorecard (cờ `impact_by_jev`), nên không phải gọi thêm lần nào. Chỉ khi không có scorecard (`DECISION_BACKEND=claude` hoặc Jev lỗi) mới dùng **mô hình quyết định** riêng.
+
+**So với điểm Jev:** các nhãn do code quyết được so với đáp án Jev. Khác nhau thì gắn cờ `jev_disagrees:<trường>=<đáp án Jev>(<xác suất>)`, ví dụ `jev_disagrees:priority=Trung bình(0.50)`. Đây là danh sách nên duyệt đầu tiên.
+
 **Mô hình quyết định** (`DecisionModel.choice`) nhận dữ kiện đã trích, nội dung bài, câu hỏi và **mô tả ngắn của từng lựa chọn** (lấy từ mục 2 và mục 4 của tiêu chí). Nó trả về đáp án, **xác suất cho từng lựa chọn** và **độ tin cậy**. Độ tin cậy dưới `LOW_CONFIDENCE` thì gắn cờ `low_confidence`.
 
 Có hai backend, chọn bằng `DECISION_BACKEND`:
@@ -237,7 +282,7 @@ Có hai backend, chọn bằng `DECISION_BACKEND`:
 | Cách gọi | `typesafe-sdk`, `system_one` với 1 câu hỏi `Choice` | `messages.parse` |
 | Đầu vào | Dữ kiện, bài, câu hỏi, mô tả lựa chọn (khoảng 2.500–3.500 token) | Như bên trái, cộng toàn văn tiêu chí trong system prompt |
 | Thời gian đo được | khoảng 0,3s | vài giây (có bước suy nghĩ) |
-| Độ tin cậy | Trường `confidence` của Jev, chặt hơn xác suất (≈0,45 khi xác suất đáp án ≈0,63) | Xác suất của đáp án |
+| Độ tin cậy dùng cho cờ | Xác suất của đáp án (`confidence` riêng của Jev được lưu trong `scores`) | Xác suất của đáp án |
 
 Jev chỉ trả lời câu hỏi lựa chọn, có/không và chấm điểm. Nó **không sinh văn bản**, nên không thay được bước extract (cần trích số liệu kèm câu trích) và bước write (cần viết lý giải).
 
@@ -350,6 +395,8 @@ TickerResult   ticker, relevance, priority(+confidence), impact(+confidence), ev
 | `validation_failed`, `validate:*` | Lý giải vẫn sai sau 2 lần viết | Người duyệt lý giải; nhãn vẫn đúng theo quy tắc |
 | `needs_review`, `write_stopped:*` | Model dừng khi viết lý giải | Người duyệt |
 | `no_event` | Không tìm được sự kiện để chấm | Xem lại bước extract |
+| `jev_disagrees:<trường>=…` | Nhãn do code quyết khác đáp án Jev | Duyệt trước tiên. Thường là quy tắc thiếu ngoại lệ, hoặc extract sai |
+| `impact_by_jev`, `priority_by_jev` | Nhãn do Jev quyết (cần phán đoán, hoặc thiếu số) | Xem xác suất trong `scores` |
 
 ---
 
@@ -417,7 +464,7 @@ Bài có nhiều mã liên quan, hoặc cần mô hình quyết định, sẽ t�
 | 1 | Điền số liệu tài chính vào `profiles/*.yaml` | Các ngưỡng theo mẫu số (đầu tư, hợp đồng, phát hành không nêu số CP lưu hành) đang dừng ở Trung bình |
 | 2 | Xác minh ngày niêm yết gần đúng (MCH, MSR, MML, FOC, FOX đang ghi 2017-01-01) và tỷ lệ sở hữu của MWG tại DMX | Có thể làm sai Relevance hoặc phép quy đổi tác động về mã mẹ |
 | 3 | KB xác nhận các quy tắc ĐX, ví dụ ngưỡng Cao của khối ngoại, A35, A36 | Nhãn của các bài thuộc nhóm này chưa chắc chắn |
-| 4 | Hiệu chỉnh ngưỡng `low_confidence` cho Jev trên bộ test | `confidence` của Jev thấp hơn xác suất, với ngưỡng 0,6 thì gần như mọi quyết định đều bị gắn cờ |
+| 4 | Hiệu chỉnh ngưỡng `low_confidence` và độ tin của từng câu hỏi Jev trên bộ test | Câu `has_numbers` đang yếu: WL-043 có số 107 tỷ nhưng Jev chỉ cho p = 0,31 |
 | 5 | Lý giải đôi khi xếp P/E vào yếu tố thuận lợi hoặc bất lợi; đôi khi trích mã quy tắc ngoài danh sách | Chỉ ảnh hưởng lý giải, không ảnh hưởng nhãn |
 | 6 | Khối ngoại một phiên và lũy kế đang dùng chung khóa `foreign_net_vnd` | Có thể lấy nhầm số với bài A23 |
 | 7 | 3 link cần nhập tay (investing.com chặn, PDF scan) | Thêm vào `eval/cache/manual/` |

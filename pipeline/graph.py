@@ -1,4 +1,4 @@
-"""LangGraph wiring: extract -> fan-out per ticker -> relevance -> rules -> impact -> write -> validate."""
+"""LangGraph wiring: extract -> jev_score -> fan-out per ticker -> relevance -> rules -> impact -> write -> validate."""
 
 import logging
 import operator
@@ -9,13 +9,15 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
 from . import config
-from .catalog import RULES
+from .catalog import CATALOG, RULES
 from .decision import DecisionModel, make_decision_model
 from .extract import CRITERIA_PATH, extract
+from .jev_scorecard import IMPACT_OPTIONS, RELEVANCE_OPTIONS, score_article
 from .llm import LLMStopError
 from .profiles import load_profiles
 from .rules import RuleOutcome, evaluate_ticker
-from .schemas import Article, ArticleFacts, Impact, Relevance, TickerMention, TickerResult
+from .schemas import (ROLE_BACKGROUND, ROLE_FOCUS, Article, ArticleFacts, Impact, Priority, Relevance,
+                      TickerMention, TickerResult)
 from .validate import check
 from .write import write_reasons
 
@@ -26,6 +28,7 @@ MAX_WRITE_ATTEMPTS = 2
 class GraphState(TypedDict, total=False):
     article: Article
     facts: ArticleFacts
+    scores: dict[str, dict]          # Jev scorecard per ticker ({} when Jev is off or failed)
     results: Annotated[list[TickerResult], operator.add]
     error: str
 
@@ -34,6 +37,7 @@ class TickerState(TypedDict, total=False):
     article: Article
     facts: ArticleFacts
     mention: TickerMention
+    scores: dict[str, dict]
     relevance: Relevance | None
     relevance_ids: list[str]
     relevance_conf: float
@@ -47,24 +51,6 @@ class TickerState(TypedDict, total=False):
 @lru_cache
 def decision_model() -> DecisionModel:
     return make_decision_model(CRITERIA_PATH.read_text(encoding="utf-8"))
-
-
-# Option descriptions for DecisionModel questions (from tieu_chi_v2 Mục 2 and Mục 4).
-RELEVANCE_OPTIONS = {
-    Relevance.TT.value: "Bài nói về chính công ty, công ty con chưa niêm yết, lãnh đạo/cổ đông chủ chốt, "
-                        "hoặc là một bên giao dịch, hoặc nêu số liệu riêng của mã",
-    Relevance.GT.value: "Bài về công ty con/liên kết có mã niêm yết riêng, biến số ngành của mã, "
-                        "bên liên quan chưa xác nhận sở hữu, hoặc chỉ nhắc tên minh họa",
-    Relevance.KLQ.value: "Mã chỉ có tên trong danh sách, hoặc tin vĩ mô tổng quát không phân tích riêng mã",
-}
-IMPACT_OPTIONS = {
-    Impact.TICH_CUC.value: "Thông tin MỚI có yếu tố thuận lợi rõ cho mã (tăng trưởng KQKD, hợp đồng, cổ tức, "
-                           "mở rộng có hiệu quả, dòng vốn vào) và không có yếu tố bất lợi tương đương",
-    Impact.TIEU_CUC.value: "Thông tin MỚI có yếu tố bất lợi rõ cho mã (giảm/lỗ, pha loãng thuần, nợ quá hạn, "
-                           "phạt, dòng vốn rút) và không có yếu tố thuận lợi tương đương",
-    Impact.TRUNG_LAP.value: "Hai chiều lợi/hại tương đương mà bài không lượng hóa tác động ròng; thiếu số liệu "
-                            "xác định hướng; sự kiện kỹ thuật/hành chính; chuyển giao nội bộ tập đoàn",
-}
 
 
 def _facts_state(article: Article, facts: ArticleFacts, ticker: str) -> str:
@@ -85,11 +71,25 @@ def node_extract(state: GraphState) -> dict:
         return {"error": f"extract: {exc}"}
 
 
+def node_jev_score(state: GraphState) -> dict:
+    """One Jev call scoring every decision for every ticker. Failure only drops the scores."""
+    facts = state.get("facts")
+    if config.DECISION_BACKEND != "jev" or not facts or not facts.ticker_mentions:
+        return {"scores": {}}
+    try:
+        return {"scores": score_article(state["article"], facts)}
+    except Exception as exc:  # network/API errors must not stop the rule engine
+        log.warning("jev scorecard failed: %r", exc)
+        return {"scores": {}}
+
+
 def fan_out(state: GraphState):
     facts = state.get("facts")
     if not facts or not facts.ticker_mentions:
         return END
-    return [Send("ticker", {"article": state["article"], "facts": facts, "mention": m, "attempts": 0, "feedback": []})
+    scores = state.get("scores") or {}
+    return [Send("ticker", {"article": state["article"], "facts": facts, "mention": m,
+                            "scores": scores.get(m.ticker, {}), "attempts": 0, "feedback": []})
             for m in facts.ticker_mentions]
 
 
@@ -103,6 +103,8 @@ def node_relevance(state: TickerState) -> dict:
     pre = evaluate_ticker(m, facts, profile, article.published_at)
     if pre.relevance is not None:
         return {"relevance": pre.relevance, "relevance_ids": pre.relevance_rule_ids, "relevance_conf": 1.0}
+    if jev := state.get("scores", {}).get("relevance"):  # role "unclear": Jev decides
+        return {"relevance": Relevance(jev["answer"]), "relevance_ids": ["G-5"], "relevance_conf": jev["p"]}
     d = decision_model().choice(
         _facts_state(article, facts, m.ticker),
         f"Mức độ liên quan của bài với mã {m.ticker} theo Mục 2 của tiêu chí?", RELEVANCE_OPTIONS)
@@ -110,31 +112,78 @@ def node_relevance(state: TickerState) -> dict:
 
 
 def node_rules(state: TickerState) -> dict:
-    article, m = state["article"], state["mention"]
-    outcome = evaluate_ticker(m, state["facts"], load_profiles()[m.ticker], article.published_at,
-                              relevance=state["relevance"], relevance_ids=state["relevance_ids"])
-    return {"outcome": outcome}
+    article, m, scores = state["article"], state["mention"], state.get("scores", {})
+    main = scores.get("main_event", {})
+    o = evaluate_ticker(m, state["facts"], load_profiles()[m.ticker], article.published_at,
+                        relevance=state["relevance"], relevance_ids=state["relevance_ids"],
+                        main_event_id=main.get("answer"),
+                        jev_offsetting=bool(scores.get("offsetting", {}).get("answer")
+                                            and scores.get("has_numbers", {}).get("answer")),
+                        event_roles={eid: ev["role"]["answer"] for eid, ev in scores.get("events", {}).items()
+                                     if "role" in ev} or None)
+    conf = state.get("relevance_conf", 1.0)
+    if "G-9" in o.priority_rule_ids:
+        conf = min(conf, main.get("p", 1.0))
+    # No numbers to compare (P-MOD-5 keeps it at Trung bình): Jev may lower it to Thấp, unless the type has a floor.
+    jev_pri = scores.get("priority", {})
+    if (o.priority == Priority.TB and o.event is not None and "P-MOD-5" in o.priority_rule_ids
+            and not CATALOG[o.event.event_type].floor_tb and jev_pri.get("answer") == Priority.THAP.value):
+        o.priority = Priority.THAP
+        o.flags.append("priority_by_jev")
+        conf = min(conf, jev_pri["p"])
+    return {"outcome": o, "relevance_conf": conf}
+
+
+def _disagreements(result: TickerResult, scores: dict, decided_by_jev: set[str]) -> list[str]:
+    flags = []
+    for eid, ev in scores.get("events", {}).items():  # extraction vs Jev on "new information" (G-4)
+        role = ev.get("role", {})
+        if ev.get("extract_is_new") is True and role.get("answer") == ROLE_BACKGROUND \
+                or ev.get("extract_is_new") is False and role.get("answer") == ROLE_FOCUS:
+            flags.append(f"jev_disagrees:{eid}.role={role['answer']}({role['p']:.2f})"
+                         f"/extract={'mới' if ev['extract_is_new'] else 'cũ'}")
+    for key, label in (("relevance", result.relevance), ("priority", result.priority), ("impact", result.impact)):
+        jev = scores.get(key)
+        if key in decided_by_jev or not jev or label is None:
+            continue
+        if jev["answer"] != label.value:
+            flags.append(f"jev_disagrees:{key}={jev['answer']}({jev['p']:.2f})")
+    return flags
 
 
 def node_impact(state: TickerState) -> dict:
-    o, article = state["outcome"], state["article"]
+    o, article, scores = state["outcome"], state["article"], state.get("scores", {})
     result = TickerResult(
         ticker=o.ticker, relevance=o.relevance, priority=o.priority, impact=o.impact,
         priority_confidence=state.get("relevance_conf", 1.0),
         event_type=o.event.event_type if o.event else "",
         relevance_rule_ids=o.relevance_rule_ids, priority_rule_ids=o.priority_rule_ids,
         impact_rule_ids=o.impact_rule_ids, computed=o.computed, evidence=o.evidence, flags=list(o.flags),
+        scores=scores,
     )
+    decided_by_jev = set()
+    if "G-5" in o.relevance_rule_ids and scores.get("relevance"):
+        decided_by_jev.add("relevance")
+    if "priority_by_jev" in o.flags:
+        decided_by_jev.add("priority")
     if o.relevance != Relevance.KLQ and o.event is not None and o.impact is None:
-        hint = f" Gợi ý quy tắc cần xét: {o.impact_hint} – {RULES.get(o.impact_hint, '')}." if o.impact_hint else ""
-        d = decision_model().choice(
-            _facts_state(article, state["facts"], o.ticker),
-            f"Ảnh hưởng của thông tin mới trong bài đến mã {o.ticker} theo Mục 4 của tiêu chí "
-            f"(sự kiện chính: [{o.event.event_type}] {o.event.description})?{hint}", IMPACT_OPTIONS)
-        answer = d.answer
-        result.impact, result.impact_confidence = Impact(answer), d.confidence
+        if jev := scores.get("impact"):  # the criteria need judgment: Jev decides
+            answer, conf = jev["answer"], jev["p"]
+            decided_by_jev.add("impact")
+            result.flags.append("impact_by_jev")
+        else:
+            hint = f" Gợi ý quy tắc cần xét: {o.impact_hint} – {RULES.get(o.impact_hint, '')}." if o.impact_hint else ""
+            d = decision_model().choice(
+                _facts_state(article, state["facts"], o.ticker),
+                f"Ảnh hưởng của thông tin mới trong bài đến mã {o.ticker} theo Mục 4 của tiêu chí "
+                f"(sự kiện chính: [{o.event.event_type}] {o.event.description})?{hint}", IMPACT_OPTIONS)
+            answer, conf = d.answer, d.confidence
+        result.impact, result.impact_confidence = Impact(answer), conf
         if answer == Impact.TRUNG_LAP.value and o.impact_hint:
             result.impact_rule_ids = [o.impact_hint]
+    if config.DECISION_BACKEND == "jev" and not scores:
+        result.flags.append("jev_missing")  # Jev call failed: labels come from the rules only
+    result.flags += _disagreements(result, scores, decided_by_jev)
     if min(result.priority_confidence, result.impact_confidence) < config.LOW_CONFIDENCE:
         result.flags.append("low_confidence")
     return {"result": result}
@@ -215,17 +264,24 @@ def node_ticker(state: TickerState) -> dict:
 def build_graph():
     g = StateGraph(GraphState)
     g.add_node("extract", node_extract)
+    g.add_node("jev_score", node_jev_score)
     g.add_node("ticker", node_ticker)
     g.add_edge(START, "extract")
-    g.add_conditional_edges("extract", fan_out, ["ticker", END])
+    g.add_edge("extract", "jev_score")
+    g.add_conditional_edges("jev_score", fan_out, ["ticker", END])
     g.add_edge("ticker", END)
     return g.compile()
 
 
-def evaluate(article: Article) -> list[TickerResult]:
-    """Entry point for the main system: one article -> one result per relevant watchlist ticker."""
+def evaluate_detailed(article: Article) -> tuple[list[TickerResult], ArticleFacts | None]:
+    """Like `evaluate`, also returning the extracted facts (for debugging and eval tools)."""
     out = build_graph().invoke({"article": article, "results": []})
     if out.get("error"):
         raise LLMStopError(out["error"])
     order = {t: i for i, t in enumerate(article.watchlist)}
-    return sorted(out.get("results", []), key=lambda r: order.get(r.ticker, 99))
+    return sorted(out.get("results", []), key=lambda r: order.get(r.ticker, 99)), out.get("facts")
+
+
+def evaluate(article: Article) -> list[TickerResult]:
+    """Entry point for the main system: one article -> one result per relevant watchlist ticker."""
+    return evaluate_detailed(article)[0]

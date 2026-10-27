@@ -27,7 +27,8 @@ import anthropic
 
 from eval.fetch import fetch
 from eval.runstats import agreement, fmt_run, timing_summary
-from pipeline import Article, config, evaluate, llm, tracing
+from pipeline import Article, config, llm, tracing
+from pipeline.graph import evaluate_detailed
 from pipeline.extract import extract
 from pipeline.llm import USAGE, LLMStopError
 
@@ -124,6 +125,78 @@ def print_golden(case: Case) -> None:
         print(f"  mã khác: {case.other_tickers}")
 
 
+JEV_LABELS = {"relevance": "Relevance", "main_event": "Sự kiện trọng tâm", "priority": "Priority",
+              "impact": "Ảnh hưởng", "is_new": "Có tin mới", "is_update": "Chỉ là cập nhật",
+              "has_numbers": "Có số liệu", "offsetting": "Có yếu tố ngược chiều", "impact_score": "Mức tác động (−2…+2)"}
+
+
+def show_scores(scores: dict) -> None:
+    if not scores:
+        return
+    print("Điểm Jev  :")
+    for key, label in JEV_LABELS.items():
+        s = scores.get(key)
+        if not s:
+            continue
+        if "score" in s:
+            print(f"  {label:<22} {s['score']:+.2f}  (confidence {s['confidence']:.2f})")
+        elif isinstance(s["answer"], bool):
+            print(f"  {label:<22} {'có' if s['answer'] else 'không'}  (p có = {s['p']:.2f})")
+        else:
+            others = ", ".join(f"{k} {v:.2f}" for k, v in sorted(s["probabilities"].items(), key=lambda x: -x[1]))
+            print(f"  {label:<22} {s['answer']}  ({others}; confidence {s['confidence']:.2f})")
+    events = scores.get("events", {})
+    if events:
+        focus = scores.get("main_event", {}).get("probabilities", {})
+        print("  Theo sự kiện (extract → Jev):")
+        for eid, ev in events.items():
+            parts = [f"trọng tâm {focus[eid]:.2f}"] if eid in focus else []
+            if "role" in ev:
+                parts.append(f"vai trò: {ev['role']['answer']} {ev['role']['p']:.2f}")
+            parts.append(f"extract: {'mới' if ev['extract_is_new'] else 'cũ'}")
+            for key, name in (("impact", "Ảnh hưởng"),):
+                if key in ev:
+                    parts.append(f"{name} {ev[key]['answer']} {ev[key]['p']:.2f}")
+            print(f"    {eid} [{ev['event_type']}] {' · '.join(parts)}")
+            print(f"       {ev['description']}")
+
+
+def fmt_number(x: float) -> str:
+    """Vietnamese style: 2.800.000.000.000 / 1,5 / 49,7."""
+    whole = f"{x:,.0f}" if float(x).is_integer() else f"{x:,.2f}".rstrip("0")
+    return whole.replace(",", "_").replace(".", ",").replace("_", ".")
+
+
+def show_facts(facts: dict | None) -> None:
+    """The events the extraction step found, with figures (metric = value ← quote) and set flags."""
+    if not facts:
+        return
+    events = facts.get("events", [])
+    print(f"\nSự kiện đã trích ({len(events)}):")
+    for e in events:
+        state = "mới" if e["is_new_info"] else "cũ"
+        if e.get("is_update_of_announced_event"):
+            state += ", cập nhật"
+        print(f"  {e['event_id']} [{e['event_type']}] ({state}) {e['description']}")
+        who = e["subject_entity"] + (f"; các bên: {', '.join(e['parties'])}" if e.get("parties") else "")
+        print(f"      chủ thể: {who}")
+        for f in e.get("figures", []):
+            print(f"      • {f['metric']} = {fmt_number(f['value'])} {f['unit']} ← \"{f['quote']}\"")
+        flags = [k for k, v in e.items() if v is True and k not in ("is_new_info", "core_segment",
+                                                                      "is_update_of_announced_event")]
+        if not e.get("core_segment", True):
+            flags.append("ngoài mảng cốt lõi")
+        if flags:
+            print(f"      cờ: {', '.join(flags)}")
+    for m in facts.get("ticker_mentions", []):
+        via = f" qua {m['via_entity']}" if m.get("via_entity") else ""
+        print(f"  {m['ticker']}: vai trò {m['role']}{via} · sự kiện {', '.join(m['event_ids']) or '-'}")
+    if facts.get("multi_ticker_equal"):
+        print("  Bài phân tích nhiều mã ngang nhau")
+    for c in facts.get("conflicting_numbers", []):
+        print(f"  Số liệu mâu thuẫn: {c}")
+
+
 def show(case: Case, results) -> None:
     exp = case.expected or {}
     if not results:
@@ -142,6 +215,7 @@ def show(case: Case, results) -> None:
             print("Số đã tính: " + "; ".join(f"{k} = {v}" for k, v in r.computed.items()))
         if r.flags:
             print(f"Cờ        : {', '.join(r.flags)}")
+        show_scores(r.scores)
         for name, text in (("Lý giải Relevance", r.relevance_reason), ("Lý giải Priority", r.priority_reason),
                            ("Lý giải Ảnh hưởng", r.impact_reason)):
             if text:
@@ -209,9 +283,10 @@ def run_case(case: Case, args, session: str) -> list[dict]:
                     facts = extract(article)
                     run["labels"], run["facts"] = fact_labels(facts), facts.model_dump(mode="json")
                 else:
-                    results = evaluate(article)
+                    results, facts = evaluate_detailed(article)
                     run["labels"] = {r.ticker: labels(r) for r in results}
                     run["results"] = [r.model_dump(mode="json") for r in results]
+                    run["facts"] = facts.model_dump(mode="json") if facts else None
         except LLMStopError as exc:
             run["error"] = f"Claude dừng — {exc}"
         run["seconds"] = round(time.perf_counter() - started, 2)
@@ -226,6 +301,7 @@ def run_case(case: Case, args, session: str) -> list[dict]:
             elif args.extract_only:
                 print(json.dumps(run["facts"], ensure_ascii=False, indent=2))
             else:
+                show_facts(run["facts"])
                 show(case, results)
             print(f"\n⏱  {fmt_run(run['seconds'], run['calls'])}")
         else:
@@ -262,6 +338,8 @@ def main(argv=None) -> int:
         print(f"Không gọi được Claude: {exc}\nChạy `set -a; source .env; set +a` rồi thử lại.", file=sys.stderr)
         return 2
     OUT.mkdir(parents=True, exist_ok=True)
+    print(f"Decision backend: {config.DECISION_BACKEND}"
+          + ("" if config.DECISION_BACKEND == "jev" else "  (Jev tắt: đặt DECISION_BACKEND=jev rồi source lại .env)"))
 
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     for case in cases:
