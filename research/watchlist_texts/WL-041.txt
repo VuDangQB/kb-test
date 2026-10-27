@@ -1,0 +1,26 @@
+# Vì sao cổ phiếu FPT giảm miệt mài dù kinh doanh vẫn tốt?
+url: https://dantri.com.vn/kinh-doanh/vi-sao-co-phieu-fpt-giam-miet-mai-du-kinh-doanh-van-tot-20261013084742066.htm
+date: 2026-10-13
+method: trafilatura_clean
+
+Vì sao cổ phiếu FPT giảm miệt mài dù kinh doanh vẫn tốt?
+(Dân trí) - Việc cổ phiếu liên tục lao dốc diễn ra trong khi kinh doanh của tập đoàn FPT vẫn tốt. Chuyện gì đang xảy ra với cổ phiếu FPT?
+Sáng 13/10, giá cổ phiếu FPT giảm tiếp về còn 56.900 đồng/cổ phiếu.
+Từ vùng 66.000-67.000 đồng, thị giá FPT đã mất khoảng 13% sau khoảng 2 tuần giảm miệt mài, qua đó vốn hóa thị trường cũng “bốc hơi” khoảng 12.000 tỷ đồng.
+Nếu so với giá 98.000 đồng/cổ phiếu hồi đầu năm, mã FPT đã giảm gần một nửa, khiến nhiều nhà đầu tư nắm giữ cổ phiếu này bị lỗ nặng. Đáng nói, việc cổ phiếu liên tục lao dốc diễn ra trong bối cảnh kinh doanh của tập đoàn vẫn tốt. Nhiều nhà đầu tư băn khoăn không hiểu chuyện gì xảy ra với cổ phiếu FPT?
+Theo giới phân tích, một trong những sức ép lớn có thể đo lường tại cổ phiếu FPT đến từ lực bán mạnh mẽ của khối ngoại - những nhà đầu tư từng xem mã cổ phiếu này là “con cưng”. Phiên 12/10, khối ngoại bán ròng hơn 91 tỷ đồng với cổ phiếu này, tiếp nối chuỗi bán ròng liên tiếp 10 ngày.
+Tính từ đầu năm nay, nhà đầu tư nước ngoài đã bán ròng xấp xỉ 180 triệu cổ phiếu FPT, tương đương hơn 14.700 tỷ đồng. “Room ngoại” (tỷ lệ sở hữu nước ngoài còn lại) của FPT đang nới rộng lên khoảng 20,56%.
+Áp lực thứ hai đến từ câu chuyện kinh doanh. Dù doanh thu lợi nhuận công ty cùng tăng trưởng tốt, song cổ phiếu chịu tác động nhiều hơn vào dự báo tiềm năng của doanh nghiệp. Trong khi đó, FPT đang đối mặt với rủi ro cạnh tranh khi AI ngày càng phát triển mạnh, và thử thách về bài toán hiệu quả vốn đầu tư tại dự án Data Factory.
+Theo báo cáo kinh doanh đến tháng 8, lãi ròng của FPT đạt khoảng 876 tỷ đồng (trung bình khoảng 28 tỷ đồng mỗi ngày). Lũy kế 8 tháng đầu năm, FPT đạt doanh thu 35.408 tỷ đồng và lợi nhuận trước thuế 7.648 tỷ đồng, lần lượt tăng 13,5% và 17,5% so với cùng kỳ. Lợi nhuận sau thuế thuộc về cổ đông công ty mẹ đạt 6.761 tỷ đồng, tăng khoảng 13%.
+Công nghệ tiếp tục đóng góp phần lớn doanh thu với 31.438 tỷ đồng trong 8 tháng, tăng 16% so với cùng kỳ và chiếm 89% tổng doanh thu FPT. Lợi nhuận trước thuế của khối này đạt 4.459 tỷ đồng, tăng 17% và đóng góp 58% tổng lợi nhuận trước thuế.
+Song song, mảng dịch vụ công nghệ thông tin tại thị trường nước ngoài cũng ghi nhận tăng 14% doanh thu lên 25.529 tỷ đồng. Khối lượng đơn hàng ký mới tại thị trường nước ngoài đạt 33.285 tỷ đồng, tăng 28% so với cùng kỳ.
+Doanh thu chuyển đổi số cũng tăng gần 20% sau 8 tháng, đạt 12.659 tỷ đồng. Riêng dịch vụ trí tuệ nhân tạo và phân tích dữ liệu đạt doanh thu 2.555 tỷ đồng, tăng 60% so với cùng kỳ.
+Dù chỉ số vẫn duy trì tăng trưởng, đánh giá của Công ty chứng khoán Techcombank (TCBS) về triển vọng của FPT thời gian tới vẫn đối mặt một số thách thức. Thứ nhất, tăng trưởng tại thị trường Mỹ - chiếm khoảng 23% doanh thu xuất khẩu phần mềm - đang chững lại khi chỉ tăng 0,8%. Trong khi đó, biến động của đồng yen có thể ảnh hưởng đến doanh thu quy đổi từ thị trường Nhật Bản, nơi đóng góp gần 44% doanh thu xuất khẩu phần mềm.
+Thứ hai, xu hướng ứng dụng AI ngày càng mạnh cũng tạo áp lực lên định giá của các doanh nghiệp dịch vụ công nghệ thông tin trên thế giới. Nhiều tập đoàn cùng ngành như Accenture hay Cognizant đã bị thị trường điều chỉnh định giá do lo ngại AI có thể thay thế một phần dịch vụ gia công phần mềm truyền thống.
+Diễn biến mới nhất tại Data Factory - Cụm dự án gần 11.000 tỷ đồng
+Về dự án đầu tư, sau thương vụ rót 200 triệu USD vào AI Factory (nhà máy AI) tại Hà Nội , FPT cũng đã quyết định chi thêm hàng trăm triệu USD phát triển AI Factory tại Nhật Bản.
+Theo tính toán của TCBS, hai cụm hạ tầng AI của tập đoàn tại Việt Nam và Nhật Bản, với tổng vốn đầu tư khoảng 10.900 tỷ đồng, đã vượt điểm hòa vốn và bắt đầu đóng góp lợi nhuận từ quý II. Đơn vị phân tích kỳ vọng giai đoạn 2024-2026 là đỉnh chu kỳ đầu tư, trước khi áp lực khấu hao giảm dần từ năm 2027, tạo dư địa cải thiện lợi nhuận.
+Việc tăng cường đầu tư AI, mặt khác đang tạo sức ép giảm đơn giá gia công phần mềm.
+Ban lãnh đạo FPT từng chia sẻ doanh thu từ các dịch vụ liên quan đến AI được kỳ vọng tăng trưởng ít nhất 30% mỗi năm trong 5 năm tới, trong khi các dịch vụ công nghệ thông tin truyền thống có thể duy trì tốc độ tăng trưởng một chữ số.
+Cổ phiếu giảm liên tục đưa hệ số P/E (hệ số giá trên lợi nhuận) của mã FPT về 12,5 lần, thấp hơn đáng kể so với mức trung vị 20,2 lần của ba năm gần nhất.
+Trong bối cảnh này theo giới phân tích, góc nhìn lạc quan là thị trường cũng đã phản ánh phần lớn những lo ngại về tác động của trí tuệ nhân tạo (AI) vào giá cổ phiếu.

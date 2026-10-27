@@ -1,0 +1,35 @@
+ticker: NVL
+name: CTCP Tập đoàn Đầu tư Địa ốc No Va
+aliases: [Novaland, Tập đoàn Novaland, NVL]
+entities:
+  - name: Diamond Properties
+    aliases: [CTCP Diamond Properties]
+    kind: shareholder
+    core: false
+  - name: NovaGroup
+    aliases: [Nova Group]
+    kind: shareholder
+    core: false
+  - name: Aqua City
+    aliases: [Thành phố Aqua]
+    core: true
+  - name: NovaWorld Phan Thiết
+    aliases: []
+    core: true
+  - name: NovaWorld Hồ Tràm
+    aliases: []
+    core: true
+  - name: Nova Saigon Royal
+    aliases: []
+    core: true
+  - name: No Va Thảo Điền
+    aliases: []
+    core: true
+financials:
+  - as_of: 2026-06-30
+    revenue_ttm: null
+    npat_ttm: null
+    total_assets: null
+    equity: null
+    shares_outstanding: null
+sector_variables: [lãi suất, tín dụng bất động sản, trái phiếu doanh nghiệp, pháp lý đất đai]

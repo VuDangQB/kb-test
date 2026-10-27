@@ -1,0 +1,12 @@
+# FPT TRANSFORM 2026: Điểm hẹn về AI
+url: https://www.sggp.org.vn/fpt-transform-2026-diem-hen-ve-ai-post874340.html
+date: 2026-10-01
+method: trafilatura_clean
+
+Tập đoàn FPT vừa công bố sự kiện FPT TRANSFORM 2026, được xem là điểm hẹn thiết thực giúp cộng đồng kỹ sư và doanh nghiệp giải bài toán đưa sản phẩm AI từ bản thử nghiệm ra vận hành thực tế.
+Sự kiện FPT TRANSFORM 2026 được tổ chức nhằm tập trung giải quyết nút thắt này, giúp cộng đồng công nghệ cập nhật xu hướng và học hỏi kinh nghiệm ứng dụng AI vào quản trị, vận hành doanh nghiệp.
+Nội dung chuyên môn tại sự kiện trải rộng từ Agentic AI (hệ thống AI có khả năng tự lập kế hoạch và thực hiện nhiều bước), AI tạo sinh (Generative AI), thị giác máy tính, phân tích video, vận hành hệ thống AI, hạ tầng GPU trên đám mây đến an ninh mạng và dựng hình 3D.
+Các phiên chuyên sâu sẽ chia sẻ về cách xây dựng trợ lý AI (AI Agent) cho doanh nghiệp, tối ưu khả năng xử lý của mô hình ngôn ngữ lớn và ứng dụng AI trong lập trình phần mềm.
+Không dừng lại ở các bài tham luận lý thuyết, sự kiện mang đến không gian thực hành và trải nghiệm trực tiếp cho người tham dự. Tại khu vực Tech Show và Expo Theater, dự kiến hơn 200 giải pháp công nghệ về hạ tầng tính toán, điện toán đám mây, lưu trữ và bảo mật sẽ được giới thiệu và trình diễn...
+Bên cạnh đó, chuỗi 10 workshop kỹ thuật cho phép các kỹ sư trực tiếp thực hành xây dựng quy trình AI tự động (Agentic Workflow), ứng dụng AI trong lập trình (AI Coding), tối ưu khả năng xử lý của mô hình ngôn ngữ lớn và bảo mật điện toán đám mây.
+FPT TRANSFORM 2026 hứa hẹn là điểm hẹn công nghệ quan trọng, hỗ trợ các kỹ sư, nhà phát triển và doanh nghiệp tìm kiếm giải pháp nâng cao năng lực xây dựng, vận hành hệ thống AI quy mô lớn. Với chủ đề “Ship AI Live”, sự kiện công nghệ quốc tế FPT TRANSFORM 2026 dự kiến diễn ra ngày 17-10-2026 tại Hà Nội.

@@ -1,0 +1,30 @@
+ticker: MWG
+name: CTCP Đầu tư Thế Giới Di Động
+aliases: [Thế Giới Di Động, Thế giới Di động, TGDĐ, MWG]
+entities:
+  # Theo MWG (viettimes 15/09/2026): CTCP Đầu tư Điện Máy Xanh gồm các chuỗi Thế Giới Di Động,
+  # Điện Máy Xanh, TopZone, EraBlue và Thợ Điện Máy Xanh. Tin về các chuỗi này sau 06/08/2026 là Gián tiếp.
+  # Lưu ý: "Thế Giới Di Động" vừa là tên chuỗi (thuộc DMX) vừa là tên công ty mẹ MWG.
+  - name: Điện Máy Xanh
+    aliases: [DMX, ĐMX, Điện máy Xanh, CTCP Đầu tư Điện Máy Xanh, TopZone, Topzone, EraBlue, Erablue, Thợ Điện Máy Xanh]
+    listed_ticker: DMX
+    listed_since: 2026-08-06
+    core: true
+    ownership: []          # cần xác minh tỷ lệ MWG sở hữu DMX
+  - name: Bách Hóa Xanh
+    aliases: [Bách Hoá Xanh, BHX]
+    core: true
+  - name: An Khang
+    aliases: [Nhà thuốc An Khang]
+    core: false
+  - name: AVAKids
+    aliases: [AvaKids]
+    core: false
+financials:                # cần điền; null = chưa có dữ liệu
+  - as_of: 2026-06-30
+    revenue_ttm: null
+    npat_ttm: null
+    total_assets: null
+    equity: null
+    shares_outstanding: null
+sector_variables: [sức mua bán lẻ, tổng mức bán lẻ, CPI, tiêu dùng, mùa mở bán iPhone]

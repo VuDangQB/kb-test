@@ -1,0 +1,32 @@
+# MWG đứng ngoài danh sách FTSE, nhưng BHX và “kho tiền” hơn 34.500 tỷ đồng vẫn đáng chú ý
+url: https://smartly.vn/tin-tuc/mwg-dung-ngoai-danh-sach-ftse-nhung-bhx-va-kho-tien-hon-34500-ty-dong-van-dang-chu-y
+date: 2026-09-01
+method: trafilatura_clean
+
+Trong đợt rà soát tháng 9/2026, FTSE Russell đưa 117 cổ phiếu Việt Nam vào các phân nhóm của GEIS, nhưng MWG không có tên. Trong khi đó, tăng trưởng của Bách Hóa Xanh cùng lượng tiền và tài sản tài chính lớn đang trở thành những yếu tố đáng chú ý trong câu chuyện của doanh nghiệp sau thời điểm thị trường được nâng hạng.
+117 cổ phiếu được FTSE Russell bổ sung, MWG đứng ngoài
+Theo kết quả rà soát bán niên tháng 9/2026 của FTSE Russell, 117 cổ phiếu Việt Nam được bổ sung vào các phân nhóm của Bộ chỉ số FTSE Global Equity Index Series (GEIS), gồm 3 cổ phiếu Large Cap, 3 cổ phiếu Mid Cap, 21 cổ phiếu Small Cap và 90 cổ phiếu Micro Cap.
+Các thay đổi có hiệu lực từ ngày 21/9/2026, trùng với thời điểm Việt Nam được FTSE Russell phân loại lên nhóm Secondary Emerging Market.
+Trong danh sách 27 cổ phiếu được bổ sung vào các nhóm Large Cap, Mid Cap và Small Cap cũng như 90 cổ phiếu Micro Cap, MWG không xuất hiện.
+Theo ước tính của ACBS, riêng 27 cổ phiếu thuộc các nhóm vốn hóa lớn, vừa và nhỏ có thể được các quỹ mua ròng khoảng 5.588 tỷ đồng trong kỳ cơ cấu tháng 9.
+Việc không nằm trong danh sách bổ sung đồng nghĩa MWG không phải là một trong những cổ phiếu được hưởng dòng vốn cơ cấu trực tiếp từ danh mục mới. Tuy nhiên, với doanh nghiệp này, những yếu tố về tăng trưởng hoạt động và sức khỏe tài chính vẫn là các biến số đáng chú ý khi thị trường bước vào giai đoạn sau nâng hạng.
+BHX tăng tốc, mở hơn 1.000 cửa hàng trong 8 tháng
+Một trong những điểm đáng chú ý trong hoạt động kinh doanh của MWG hiện nay là sự cải thiện của chuỗi Bách Hóa Xanh (BHX).
+Theo số liệu MWG công bố, lũy kế 8 tháng đầu năm 2026, BHX đạt khoảng 40.100 tỷ đồng doanh thu, tăng gần 32% so với cùng kỳ. Riêng tháng 8, doanh thu chuỗi đạt khoảng 6.200 tỷ đồng, tăng 55% so với cùng kỳ và tăng 11% so với tháng trước.
+Song song với tăng trưởng doanh thu, tốc độ mở rộng hệ thống cũng được đẩy nhanh. Trong 8 tháng, BHX mở thêm 1.053 cửa hàng, vượt mục tiêu 1.000 cửa hàng đề ra cho cả năm. Đến cuối tháng 8, chuỗi có 3.612 điểm bán.
+Đáng chú ý, MWG cho biết các cửa hàng mở mới trong năm đã ghi nhận lợi nhuận hoạt động dương ở cấp cửa hàng, sau khi tính cả chi phí kho vận.
+Diễn biến này khiến câu chuyện của BHX không chỉ nằm ở tốc độ gia tăng số lượng cửa hàng. Khả năng duy trì doanh thu và hiệu quả hoạt động tại các điểm bán mới sẽ là yếu tố quan trọng đối với hiệu quả của chiến lược mở rộng trong thời gian tới.
+“Kho tiền” hơn 34.500 tỷ đồng
+Bên cạnh hoạt động kinh doanh, bảng cân đối kế toán cũng là một điểm đáng chú ý của MWG.
+Theo báo cáo tài chính hợp nhất soát xét bán niên 2026, MWG có 34.569 tỷ đồng tiền mặt ròng, tăng mạnh so với mức 18.284 tỷ đồng vào cuối quý I.
+Tính đến cuối tháng 6, tổng tiền và các khoản đầu tư nắm giữ đến ngày đáo hạn của doanh nghiệp lên tới hơn 50.300 tỷ đồng, tương đương gần 50% tổng tài sản.
+Trong số này, MWG có gần 12.000 tỷ đồng chứng khoán kinh doanh, gồm các khoản đầu tư vào trái phiếu ngân hàng, chứng khoán và bất động sản; đồng thời có hơn 7.100 tỷ đồng cho vay các công ty chứng khoán.
+Lượng tiền và tài sản tài chính lớn không chỉ tạo nguồn lực cho hoạt động kinh doanh mà còn đóng góp vào doanh thu tài chính. Trong nửa đầu năm 2026, MWG ghi nhận 852 tỷ đồng doanh thu tài chính, góp phần vào hơn 6.100 tỷ đồng lợi nhuận sau thuế, gần gấp đôi cùng kỳ năm 2025.
+Như vậy, nếu BHX đang cho thấy động lực tăng trưởng từ hoạt động kinh doanh, thì lượng tiền và tài sản tài chính lớn lại tạo cho MWG một nguồn lực đáng kể để duy trì hoạt động, đầu tư và mở rộng các chuỗi bán lẻ.
+MWG sau thời điểm nâng hạng: câu chuyện nằm ở tăng trưởng và nguồn lực
+Ngày 21/9 đánh dấu một cột mốc quan trọng đối với thị trường chứng khoán Việt Nam khi việc phân loại thị trường của FTSE Russell có hiệu lực. Tuy nhiên, tác động của quá trình này đối với từng doanh nghiệp sẽ không chỉ nằm ở việc cổ phiếu có được đưa vào một rổ chỉ số mới hay không.
+Đối với MWG, doanh nghiệp không thuộc nhóm 117 cổ phiếu được bổ sung trong đợt rà soát tháng 9. Do đó, cổ phiếu không nằm trong nhóm được hưởng dòng tiền cơ cấu trực tiếp từ danh mục mới.
+Ở chiều ngược lại, diễn biến kinh doanh của BHX và sức mạnh tài chính của MWG đang tạo ra những yếu tố riêng cần được theo dõi. Doanh thu BHX tăng nhanh, hệ thống tiếp tục mở rộng và các cửa hàng mới bắt đầu ghi nhận lợi nhuận hoạt động dương là những chỉ dấu về hiệu quả của quá trình tái cấu trúc và mở rộng chuỗi.
+Trong khi đó, lượng tiền và tài sản tài chính ở mức cao giúp doanh nghiệp duy trì nguồn lực cho hoạt động kinh doanh cũng như các kế hoạch đầu tư trong tương lai.
+Vì vậy, sau ngày 21/9, câu chuyện của MWG không chỉ xoay quanh việc cổ phiếu có nằm trong danh mục FTSE hay không, mà còn phụ thuộc vào khả năng duy trì tốc độ tăng trưởng của BHX, hiệu quả của các cửa hàng mở mới, kết quả kinh doanh của các chuỗi thành viên và cách doanh nghiệp sử dụng nguồn lực tài chính lớn hiện có.
+Lam Anh

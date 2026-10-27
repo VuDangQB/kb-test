@@ -1,0 +1,6 @@
+# 
+url: https://vn.investing.com/news/stock-market-news/masan-consumer-qua-goc-nhin-cac-cong-ty-chung-khoan-loi-the-nao-cho-tang-truong-dai-han-2732064
+date: None
+method: 
+
+[KHÔNG CRAWL ĐƯỢC] không kết nối được tới máy chủ: ConnectError('[Errno 111] Connection refused')

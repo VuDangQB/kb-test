@@ -1,0 +1,25 @@
+ticker: HPG
+name: CTCP Tập đoàn Hòa Phát
+aliases: [Hòa Phát, Hoà Phát, Tập đoàn Hòa Phát, HPG]
+entities:
+  - name: Hòa Phát Dung Quất
+    aliases: [Thép Hòa Phát Dung Quất, Hoà Phát Dung Quất]
+    core: true
+  - name: Hòa Phát Nông nghiệp
+    aliases: [Nông nghiệp Hòa Phát]
+    core: false
+  - name: Bất động sản Hòa Phát
+    aliases: [Phát triển Bất động sản Hòa Phát]
+    core: false
+  - name: Điện máy gia dụng Hòa Phát
+    aliases: []
+    core: false
+financials:
+  - as_of: 2026-06-30
+    revenue_ttm: null
+    npat_ttm: null
+    total_assets: null
+    equity: null
+    shares_outstanding: null
+    capacity_tonnes: 16000000
+sector_variables: [giá thép, giá HRC, quặng sắt, than cốc, đầu tư công, phòng vệ thương mại thép, hạn ngạch thép EU]

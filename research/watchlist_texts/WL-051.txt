@@ -1,0 +1,6 @@
+# 
+url: https://vn.investing.com/news/stock-market-news/vietstock-daily-13102026-suc-ep-chua-dut-2732479
+date: None
+method: 
+
+[KHÔNG CRAWL ĐƯỢC] không kết nối được tới máy chủ: ConnectError('[Errno 111] Connection refused')

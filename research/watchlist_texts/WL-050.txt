@@ -1,0 +1,25 @@
+# FPT Cloud: đổi mới sáng tạo từ thực tiễn, sẵn sàng đón trước nhu cầu
+url: https://mst.gov.vn/fpt-cloud-doi-moi-sang-tao-tu-thuc-tien-san-sang-don-truoc-nhu-cau-197261012081924515.htm
+date: 2026-10-12
+method: trafilatura_clean
+
+Thiết kế hạ tầng theo nhu cầu riêng của từng doanh nghiệp, tự động hóa quản trị và đón đầu xu hướng Trí tuệ Nhân tạo (AI) là những định hướng cốt lõi của FPT Cloud. Tại Better Choice Awards 2026, nền tảng đã chứng minh giá trị qua khả năng giải quyết
+Đầu tháng 10/2026, tại Gala trao giải Better Choice Awards 2026 trong khuôn khổ Ngày hội Đổi mới sáng tạo quốc gia, FPT Cloud được vinh danh Top 5 Giải pháp đổi mới sáng tạo phục vụ doanh nghiệp. Thể lệ mùa giải yêu cầu giải pháp dự thi đã triển khai thực tế tại thị trường Việt Nam và giải quyết bài toán cho người dùng thật.
+Làm chủ công nghệ, giải quyết bài toán cho hơn 3000 doanh nghiệp
+Năng lực can thiệp sâu tới tầng lõi của đội ngũ kỹ sư giúp FPT Cloud tùy biến hệ thống linh hoạt, giải quyết chính xác các bài toán đặc thù của doanh nghiệp tại thị trường Việt Nam.
+Trong bán lẻ, thương mại điện tử và giáo dục trực tuyến, hệ thống cần duy trì hiệu năng khi lượng truy cập tăng mạnh, đồng thời có thể thu hẹp tài nguyên khi qua cao điểm.
+Nền tảng điện toán đám mây FPT Cloud cho phép doanh nghiệp chủ động mở rộng hoặc thu hẹp tài nguyên theo nhu cầu thực tế, kết hợp dịch vụ sao lưu và khôi phục dữ liệu, đảm bảo hệ thống vận hành ổn định ngay cả khi số lượng người dùng tăng đột biến.
+Các hệ thống tài chính, ngân hàng còn đòi hỏi kiểm soát chặt quyền truy cập và bảo vệ dữ liệu nhạy cảm. FPT Cloud cung cấp mạng riêng ảo (VPC), cụm Kubernetes ở chế độ Private cùng nhiều lựa chọn kết nối, lưu trữ và dự phòng trong nước.
+FPT Cloud cũng công bố đáp ứng yêu cầu an toàn hệ thống thông tin cấp độ 4, được Bộ Công an thẩm định và phê duyệt theo văn bản số 3810/BCA-A05 đồng thời tuân thủ các tiêu chuẩn quốc tế về bảo mật và chất lượng như ISO 27001, ISO 27017, ISO 27018, PCI DSS Level 1, SOC 1/2/3…
+Các trung tâm dữ liệu mới của FPT được thiết kế và xây dựng theo chuẩn ANSI/TIA-942 Rated 3, đảm bảo khả năng bảo trì song song không gián đoạn dịch vụ và độ sẵn sàng cao.
+Trong lĩnh vực logistics và giao vận, bài toán nằm ở xử lý dữ liệu theo thời gian thực để giảm độ trễ vận hành.
+Đơn cử như Ahamove có hơn 20,000 tài xế hoạt động cùng hàng trăm đơn hàng hoàn thành mỗi ngày, yêu cầu cơ sở hạ tầng công nghệ thông tin phải hoạt động liên tục và ổn định không gián đoạn kể cả trong những thời gian cao điểm lưu lượng tăng đến 200%.
+Khi hệ thống Ahamove vận hành trên nền tảng FPT Cloud giúp doanh nghiệp hợp nhất hạ tầng IT trên một nền tảng đám mây duy nhất, tiết kiệm lên đến 30% chi phí cho cơ sở hạ tầng, kiểm soát hệ thống dễ dàng và linh hoạt tạo máy ảo, đảm bảo hoạt động không gián đoạn, duy trì trải nghiệm khách hàng xuyên suốt.
+Hạ tầng sẵn sàng cho AI: phát triển năng lực trong nước đi trước nhu cầu
+Khi AI tham gia vào từng mắt xích vận hành, nút thắt lớn nhất của doanh nghiệp, tổ chức chuyển dịch từ phần mềm sang phần cứng.
+Việc huấn luyện và vận hành các mô hình AI đòi hỏi năng lực điện toán lớn, nhưng việc tự đầu tư cơ sở hạ tầng siêu máy tính cần chi phí vốn (CapEx) khổng lồ và độ trễ trong khâu mua sắm và cài đặt, tạo ra khoảng cách giữa thời điểm nhu cầu phát sinh và lúc ứng dụng thực sự có thể đi vào vận hành.
+FPT Cloud liên tục mở rộng năng lực hạ tầng cloud trong nước để chuẩn bị cho nhu cầu của doanh nghiệp, tổ chức trong kỷ nguyên AI.
+Tháng 4/2026, FPT Cloud chính thức đưa vào vận hành Zone Thủ Đức, vùng hạ tầng thứ 4 tại Việt Nam, đặt tại Trung tâm Dữ liệu FPT Fornix HCM02, Khu Công nghệ cao TP HCM. Với việc mở rộng này, quy mô hạ tầng FPT Cloud đạt 5.000 máy chủ vật lý, vận hành hàng trăm nghìn máy chủ ảo cùng năng lực lưu trữ đạt mức hàng trăm Petabyte (PB).
+Zone Thủ Đức bổ sung tài nguyên tính toán, lưu trữ trên máy chủ ảo gia tăng sức mạnh bởi GPU, đa dạng các hình thức lưu trữ từ Block, Object đến High-Performance Storage, sẵn sàng xử lý đa dạng tải công việc (workload) từ các hệ thống nghiệp vụ cốt lõi, dữ liệu lớn (Big Data) cho đến các bài toán AI phức tạp. Thời điểm mở rộng cũng được tính để đón đầu giai đoạn lưu lượng truy cập tăng đột biến trong đợt mua sắm cuối năm.
+Hạ tầng được chuẩn bị từ sớm giúp doanh nghiệp có điều kiện thử nghiệm ứng dụng, đánh giá khả năng chịu tải và xây dựng phương án mở rộng trước khi nhu cầu tăng. Những yêu cầu phát sinh trong quá trình sử dụng tiếp tục giúp FPT Cloud xác định dịch vụ cần cải tiến và năng lực hạ tầng cần đầu tư.
+Danh hiệu tại Better Choice Awards 2026 ghi nhận khả năng phục vụ doanh nghiệp của nền tảng. Quá trình đổi mới sáng tạo vẫn tiếp diễn cùng những kế hoạch phát triển của khách hàng, như: Mở rộng hệ thống, đưa dịch vụ mới ra thị trường hay ứng dụng AI vào vận hành. Chuẩn bị năng lực hạ tầng trong nước từ trước giúp FPT Cloud sẵn sàng đáp ứng khi những kế hoạch ấy bước vào triển khai, để doanh nghiệp có nguồn lực thực hiện đúng thời điểm cần thiết.

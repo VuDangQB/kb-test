@@ -1,0 +1,47 @@
+ticker: MSN
+name: CTCP Tập đoàn Masan
+aliases: [Masan, Masan Group, Tập đoàn Masan, MSN]
+entities:
+  - name: Masan Consumer
+    aliases: [MCH, Masan Consumer Holdings, CTCP Hàng tiêu dùng Masan]
+    listed_ticker: MCH
+    listed_since: 2017-01-01   # ngày gần đúng: niêm yết từ trước giai đoạn đánh giá
+    core: true
+    ownership:
+      - {as_of: 2026-06-30, pct: 69.4}
+  - name: Masan High-Tech Materials
+    aliases: [MSR, Masan High-Tech, Masan Tài nguyên]
+    listed_ticker: MSR
+    listed_since: 2017-01-01
+    core: true
+    ownership:
+      - {as_of: 2026-06-30, pct: 92.45}
+      - {as_of: 2026-10-01, pct: 87.46}
+  - name: Masan MEATLife
+    aliases: [MML]
+    listed_ticker: MML
+    listed_since: 2017-01-01
+    core: false
+  - name: WinCommerce
+    aliases: [WinMart, WCM]
+    core: true
+  - name: Phúc Long
+    aliases: [Phuc Long]
+    core: false
+  - name: Techcombank
+    aliases: [TCB]
+    listed_ticker: TCB
+    listed_since: 2018-06-04
+    kind: associate
+    core: false
+  - name: Lepus
+    aliases: [Công ty Đầu tư Lepus, Đầu tư Lepus]
+    core: true
+financials:
+  - as_of: 2026-06-30
+    revenue_ttm: null
+    npat_ttm: null
+    total_assets: null
+    equity: null
+    shares_outstanding: null
+sector_variables: [tiêu dùng, giá hàng hóa, giá vonfram, APT]

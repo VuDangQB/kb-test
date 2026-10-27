@@ -1,0 +1,22 @@
+# FPT bắt tay ông lớn công nghệ Hàn Quốc, mở rộng tham vọng toàn cầu với Nhà máy AI
+url: https://nguoiquansat.vn/fpt-bat-tay-ong-lon-cong-nghe-han-quoc-mo-rong-tham-vong-toan-cau-voi-nha-may-ai-321416.html
+date: 2026-10-12
+method: trafilatura_clean
+
+FPT bắt tay ông lớn công nghệ Hàn Quốc, mở rộng tham vọng toàn cầu với Nhà máy AI
+Tập đoàn FPT hiện sở hữu hai nhà máy AI tại Nhật Bản và Việt Nam, lần lượt xếp thứ 36 và 38 trong bảng xếp hạng các hệ thống siêu máy tính mạnh nhất thế giới.
+Tập đoàn FPT (HoSE: FPT) vừa công bố thỏa thuận hợp tác chiến lược với NAVER Cloud, doanh nghiệp công nghệ thuộc Tập đoàn NAVER của Hàn Quốc.
+Thỏa thuận tập trung vào phát triển công nghệ, cung cấp các dịch vụ trí tuệ nhân tạo (AI) và thúc đẩy thương mại hóa, qua đó mở rộng hoạt động kinh doanh và hiện diện của FPT AI Factory (Nhà máy AI) tại khu vực châu Á – Thái Bình Dương cũng như trên thị trường toàn cầu.
+Theo thông tin công bố ngày 12/10, hai doanh nghiệp đã ký kết biên bản ghi nhớ (MOU), tập trung vào phát triển công nghệ, cung cấp dịch vụ AI và đẩy mạnh thương mại hóa các giải pháp trên nền tảng FPT AI Factory.
+Một trong những nội dung trọng tâm của thỏa thuận là tích hợp mô hình ngôn ngữ lớn HyperCLOVA X do NAVER Cloud phát triển vào hệ sinh thái FPT AI Factory. Thông qua đó, các khách hàng doanh nghiệp của FPT có thể tiếp cận công nghệ AI của đối tác Hàn Quốc trên nền tảng hạ tầng hiện có.
+Bên cạnh việc mở rộng danh mục sản phẩm, hai bên dự kiến phối hợp phát triển và triển khai các ứng dụng AI tại những thị trường trọng điểm trong khu vực cũng như trên thế giới. Hoạt động hợp tác hướng đến việc kết hợp thế mạnh về hạ tầng điện toán đám mây, mô hình AI và năng lực triển khai dịch vụ của mỗi doanh nghiệp.
+Đáng chú ý, FPT và NAVER Cloud sẽ triển khai các chương trình trao đổi chuyên môn định kỳ, với sự tham gia của đội ngũ kỹ sư FPT cùng các chuyên gia từ trụ sở chính và Trung tâm Phát triển NAVER Cloud tại Việt Nam.
+Các nhóm kỹ thuật sẽ trực tiếp hỗ trợ khách hàng trong quá trình triển khai, từ tối ưu tài nguyên xử lý đồ họa (GPU), cải thiện hiệu suất vận hành mô hình đến ứng dụng các tác tử AI (AI Agent) vào hoạt động thực tế.
+Việc kết hợp nguồn lực được kỳ vọng giúp doanh nghiệp tiếp cận giải pháp AI mà không cần đầu tư toàn bộ hạ tầng công nghệ ban đầu, qua đó rút ngắn thời gian triển khai và thương mại hóa sản phẩm.
+Theo ông Lê Hồng Việt, Tổng Giám đốc FPT Smart Cloud, FPT đã xây dựng năng lực cung cấp dịch vụ AI Cloud thông qua hệ thống FPT AI Factory và đội ngũ kỹ sư có kinh nghiệm tại nhiều thị trường. Hợp tác với NAVER Cloud được kỳ vọng giúp tập đoàn mở rộng khả năng cung cấp công nghệ AI, đồng thời hỗ trợ khách hàng chuyển đổi các sáng kiến công nghệ thành hiệu quả kinh doanh.
+Về phía đối tác, ông Yuwon Kim, Tổng Giám đốc NAVER Cloud, đánh giá việc kết hợp công nghệ và kinh nghiệm phát triển AI của doanh nghiệp Hàn Quốc với nền tảng FPT AI Factory sẽ tạo cơ sở để hai bên mở rộng hoạt động ra ngoài thị trường Việt Nam và Hàn Quốc.
+Thỏa thuận mới cũng nằm trong chiến lược lấy AI làm trọng tâm của FPT. Tập đoàn hiện phát triển hệ sinh thái công nghệ gồm nền tảng FleziPT, khung đánh giá mức độ trưởng thành AI CASAN và các nhà máy AI tại Việt Nam, Nhật Bản.
+Theo FPT, tập đoàn hiện sở hữu hai hệ thống AI Factory tại Nhật Bản và Việt Nam, lần lượt xếp thứ 36 và 38 trong bảng xếp hạng các hệ thống siêu máy tính mạnh nhất thế giới.
+Được xây dựng trên công nghệ của NVIDIA, FPT AI Factory hiện cung cấp các giải pháp điện toán đám mây phục vụ phát triển AI cho hơn 18.000 nhà phát triển và trên 2.000 doanh nghiệp toàn cầu.
+NAVER Cloud là công ty con của Tập đoàn NAVER (Hàn Quốc), chuyên cung cấp dịch vụ điện toán đám mây, hạ tầng công nghệ và các giải pháp AI.
+Tập đoàn NAVER là doanh nghiệp thứ ba trên thế giới phát triển thành công mô hình ngôn ngữ lớn (LLM) siêu quy mô. Trên nền tảng này, NAVER Cloud cung cấp hệ sinh thái AI toàn diện, từ dịch vụ AI, dữ liệu đến hạ tầng siêu máy tính, điện toán đám mây và trung tâm dữ liệu.

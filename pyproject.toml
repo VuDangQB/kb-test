@@ -1,0 +1,25 @@
+[project]
+name = "kb-test"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=2.3.0",
+    "httpx>=0.28.1",
+    "langgraph>=1.2.18",
+    "openpyxl>=3.1.5",
+    "pydantic>=2.14.1",
+    "pypdf>=6.21.3",
+    "pyyaml>=6.0.3",
+    "trafilatura>=2.3.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+phoenix = [
+    "arize-phoenix>=20.3.0",
+    "arize-phoenix-otel>=0.17.2",
+    "openinference-instrumentation-anthropic>=3.1.0",
+    "openinference-instrumentation-langchain>=0.1.80",
+]

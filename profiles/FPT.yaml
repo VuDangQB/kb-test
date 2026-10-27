@@ -1,0 +1,37 @@
+ticker: FPT
+name: CTCP FPT
+aliases: [Tập đoàn FPT, FPT Corporation, FPT]
+entities:
+  - name: FPT Software
+    aliases: [FPT Software]
+    core: true
+  - name: FPT Smart Cloud
+    aliases: [FPT Cloud, FPT AI Factory]
+    core: true
+  - name: FPT Education
+    aliases: [Đại học FPT]
+    core: false
+  - name: FPT Online
+    aliases: [FOC]
+    listed_ticker: FOC
+    listed_since: 2017-01-01
+    core: false
+  - name: FPT Telecom
+    aliases: [FOX]
+    listed_ticker: FOX
+    listed_since: 2017-01-01
+    core: true
+  - name: FPT Retail
+    aliases: [FRT, FPT Shop, Long Châu, Nhà thuốc Long Châu]
+    listed_ticker: FRT
+    listed_since: 2018-04-26
+    kind: associate
+    core: false
+financials:
+  - as_of: 2026-06-30
+    revenue_ttm: null
+    npat_ttm: null
+    total_assets: null
+    equity: null
+    shares_outstanding: null
+sector_variables: [chi tiêu CNTT toàn cầu, tỷ giá USD/JPY, AI, gia công phần mềm]

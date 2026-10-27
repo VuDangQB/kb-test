@@ -1,0 +1,24 @@
+# FPT bắt tay NAVER Cloud để mở rộng dịch vụ FPT AI Factory
+url: https://bbw.vn/fpt-bat-tay-naver-cloud-de-mo-rong-dich-vu-fpt-ai-factory-60897.html
+date: 2026-10-13
+method: trafilatura_clean
+
+BBWV - FPT bắt tay NAVER Cloud đưa FPT AI Factory ra thị trường khu vực và thế giới, khi lợi nhuận quý II lập đỉnh nhưng cổ phiếu đã mất hơn 44% so với mức cao nhất của năm trước.
+FPT AI Factory với NVIDIA HGX B300. Hình ảnh: FPT
+Tác giả: Giang Lê
+13 tháng 10, 2026 lúc 7:00 AM
+Tập đoàn FPT (FPT) và NAVER Cloud của Hàn Quốc vừa ký biên bản ghi nhớ (MOU) để mở rộng thị trường và hoạt động kinh doanh của FPT AI Factory tại châu Á-Thái Bình Dương và trên toàn cầu, theo thông cáo của FPT ngày 12.10.
+Thỏa thuận bao gồm hợp tác phát triển công nghệ, cung cấp dịch vụ AI và thương mại hóa. Thông cáo không nêu giá trị tài chính hay thời hạn của thỏa thuận.
+FPT AI Factory là hệ thống siêu máy tính dựa trên nền tảng điện toán đám mây do FPT hợp tác cùng NVIDIA xây dựng. Có thể hình dung đây như một "nhà máy công nghiệp", trong đó nguyên liệu đầu vào là dữ liệu thô của doanh nghiệp, dây chuyền sản xuất là hàng ngàn chip hiệu suất cao, còn sản phẩm đầu ra là các mô hình AI, tác tử AI (AI Agent) hoặc các giải pháp thông minh được tối ưu cho từng doanh nghiệp.
+Theo FPT, hai bên sẽ thúc đẩy phát triển và triển khai AI trên nền tảng FPT AI Factory cho doanh nghiệp tại các thị trường chiến lược ở châu Á-Thái Bình Dương và thế giới. FPT và NAVER Cloud cũng sẽ đưa mô hình ngôn ngữ lớn HyperCLOVA X của NAVER Cloud tới khách hàng doanh nghiệp của FPT thông qua FPT AI Factory.
+NAVER Cloud là công ty con của tập đoàn NAVER, cung cấp dịch vụ hạ tầng và nền tảng công nghệ thông tin từ năm 1999, hiện vận hành dịch vụ điện toán đám mây công cộng NAVER Cloud Platform.
+Theo phân tích của công ty chứng khoán SSI trong báo cáo công bố hồi tháng 6.2026, AI đang là động lực tăng trưởng chính của FPT. Doanh thu từ chuyển đổi số đạt 7.700 tỉ đồng trong 5 tháng đầu năm, tăng 26% so với cùng kỳ, trong đó doanh thu từ các dịch vụ AI và phân tích dữ liệu tăng 67%.
+Một điểm đáng chú ý khác là dịch vụ AI Factory bắt đầu mang lại lợi nhuận sớm hơn dự kiến. Ban lãnh đạo FPT cho biết tỉ lệ sử dụng của hệ thống đã vượt 90%, cao hơn đáng kể ngưỡng hòa vốn ước tính từ 70-80%.
+Tuy vậy, JPMorgan từng cảnh báo trong báo cáo đầu năm 2026 rằng các khoản đầu tư hạ tầng AI của FPT "có cường độ vốn cao" và có thể tạo áp lực lên tỉ suất sinh lời trên tổng tài sản (ROA) trong ngắn hạn.
+FPT đang chứng kiến sự đối lập giữa hiệu quả kinh doanh và niềm tin của cổ đông. Lợi nhuận ròng của "anh cả" ngành công nghệ Việt Nam liên tục giữ quanh mức 2.500 tỉ đồng mỗi quý và lập đỉnh mới 2.567 tỉ đồng vào quý II.2026.
+Tuy nhiên giá cổ phiếu công ty đi theo chiều ngược lại, từ đỉnh 102.783 đồng đầu quý II năm 2025 xuống còn 57.100 đồng kết phiên 12.10, bốc hơi hơn 44%, theo dữ liệu Bloomberg. Sự nguội lạnh này phản ánh nỗi lo mang tính cấu trúc của nhà đầu tư trước làn sóng các mô hình Agentic AI (AI tự vận hành theo yêu cầu và quy trình của người dùng) đang chia lại "miếng bánh" của ngành dịch vụ CNTT truyền thống.
+Theo phattrienxanh.baotainguyenmoitruong.vn
+https://phattrienxanh.baotainguyenmoitruong.vn/fpt-bat-tay-naver-cloud-de-mo-rong-dich-vu-fpt-ai-factory-60897.html
+Tặng bài viết
+Bạn còn 5 bài viết có thể tặng
+Liên kết quà tặng có giá trị trong vòng 7 ngày.

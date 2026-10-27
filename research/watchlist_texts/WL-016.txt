@@ -1,0 +1,14 @@
+# Novaland (NVL) chốt quyền phát hành hơn 800 triệu cổ phiếu, giá điều chỉnh lùi sát mệnh giá
+url: https://www.vietnam.vn/novaland-nvl-chot-quyen-phat-hanh-hon-800-trieu-co-phieu-gia-dieu-chinh-lui-sat-menh-gia
+date: 2026-09-30
+method: trafilatura_clean
+
+Sở Giao dịch Chứng khoán Thành phố Hồ Chí Minh vừa công bố lịch chốt quyền mua cổ phiếu phát hành thêm của Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va (Novaland).
+Chào bán hơn 800 triệu cổ phiếu với tỷ lệ 3 chia 1
+Căn cứ Thông báo số 1955/TB-SGDHCM từ Sở Giao dịch Chứng khoán Thành phố Hồ Chí Minh, ngày 30/9/2026 là ngày giao dịch không hưởng quyền đối với cổ phiếu NVL của Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va (Novaland). Ngày 1/10/2026 tiếp theo được ấn định là ngày đăng ký cuối cùng để chốt danh sách cổ đông thực hiện quyền mua cổ phiếu.
+Theo phương án huy động vốn đã được phê duyệt, Novaland tiến hành chào bán hơn 800,68 triệu cổ phiếu mới ra thị trường với mức giá 10.000 đồng mỗi đơn vị. Tỷ lệ thực hiện quyền được ban lãnh đạo xác định ở mức 3 chia 1. Tỷ lệ này quy định rõ cổ đông sở hữu một cổ phiếu sẽ được hưởng một quyền, và cứ ba quyền sẽ được quyền nộp tiền mua thêm một cổ phiếu mới.
+Áp lực bán tháo và bài toán pha loãng tỷ lệ sở hữu
+Sự kiện chốt quyền diễn ra ngay sau một chuỗi giao dịch đầy sóng gió của mã chứng khoán bất động sản này. Tính đến thời điểm đóng cửa phiên ngày 29/9, cổ phiếu NVL đã trải qua 7 phiên giảm điểm liên tiếp. Thị giá cổ phiếu trượt dài về mức 10.300 đồng, riêng hai phiên giao dịch gần nhất đều đóng cửa tại mức giá sàn với khối lượng dư bán lên tới hàng chục triệu đơn vị.
+Áp dụng nguyên tắc điều chỉnh kỹ thuật tại ngày giao dịch không hưởng quyền với tỷ lệ phát hành 3 chia 1 và giá chào bán 10.000 đồng, giá tham chiếu của cổ phiếu NVL tại thời điểm mở cửa phiên 30/9 được tính toán lùi về mức 10.225 đồng. Việc giá thị trường sau điều chỉnh tụt sát về ngưỡng phát hành khiến biên độ an toàn của quyền mua bị thu hẹp đáng kể. Yếu tố này đã trực tiếp kích hoạt áp lực bán tháo quyết liệt từ giới đầu tư muốn tránh quyền mua trong các phiên trước đó.
+Bắt đầu từ phiên giao dịch sáng 30/9, những cổ đông còn giữ cổ phiếu NVL sẽ chính thức nhận quyền mua. Các nhà đầu tư này sẽ phải đưa ra quyết định chuẩn bị dòng tiền để nộp mua phần vốn mới hoặc chấp nhận rủi ro bị pha loãng tỷ lệ sở hữu và giá trị tài sản khi lượng lớn cổ phiếu giá rẻ được bổ sung vào thị trường.
+Nguồn: https://doanhnhan.baophapluat.vn/novaland-nvl-chot-quyen-phat-hanh-hon-800-trieu-co-phieu-gia-dieu-chinh-lui-sat-menh-gia.html
