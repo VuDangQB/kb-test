@@ -17,7 +17,7 @@ import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import anthropic
@@ -33,6 +33,7 @@ OUT = Path(__file__).resolve().parent / "out"
 PRIORITIES = ["Cao", "Trung bình", "Thấp"]
 IMPACTS = ["Tích cực", "Tiêu cực", "Trung lập"]
 WATCHLIST = ["NVL", "MSN", "FPT", "HPG", "MWG"]
+SESSION = datetime.now().strftime("%Y%m%d-%H%M%S")  # groups this invocation's traces in Phoenix
 
 
 @dataclass
@@ -87,7 +88,7 @@ def run_row(row: Row) -> Row:
         return row
     article = Article(title=row.title, url=row.url, published_at=fetched.published_at or date.today(),
                       content=fetched.text, watchlist=WATCHLIST)
-    started = time.perf_counter()
+    started, calls = time.perf_counter(), []
     meta = {"case": f"KB-{row.stt}", "run": row.run, "model": config.CLAUDE_MODEL}
     try:
         with tracing.run_attributes(session_id=f"KB-{row.stt}-{SESSION}", metadata=meta,
@@ -135,12 +136,14 @@ def rate(n: int, d: int) -> str:
     return f"{n}/{d} ({n / d:.0%})" if d else "-"
 
 
-def report(rows: list[Row]) -> str:
+def report(all_rows: list[Row], runs: int = 1) -> str:
+    rows = [r for r in all_rows if r.run == 1]
     scored = [r for r in rows if not r.error]
     real = [r for r in scored if r.stt.upper() != "VD"]
     lines = ["# Kết quả eval trên bộ test KB", "",
              f"Tổng số bài: {len(rows)} · Chấm được: {len(scored)} · Lỗi: {len(rows) - len(scored)}",
-             "Thống kê dưới đây **không tính dòng VD**, theo quy ước của KB.", "",
+             "Thống kê dưới đây **không tính dòng VD**, theo quy ước của KB."
+             + (f" Mục 1–6 là lần chạy 1; mục 7 so sánh {runs} lần chạy." if runs > 1 else ""), "",
              "## 1. Badge", "",
              "| Hạng mục | Pass |", "|---|---|",
              f"| Priority | {rate(sum(r.pri_pass for r in real), len(real))} |",
@@ -171,24 +174,73 @@ def report(rows: list[Row]) -> str:
         lines += ["## 6. Bài lỗi (không tính điểm)", ""]
         lines += [f"- [{r.stt}] {r.ticker} {r.url} — {r.error}" for r in errors]
         lines += ["", "Bài không tải được: đặt nội dung vào `eval/cache/manual/<sha1(url)>.txt` rồi chạy lại."]
-    lines += ["", "## 7. Chi phí", "", f"```\n{json.dumps(USAGE, indent=1)}\n```"]
+    if runs > 1:
+        lines += ["", *stability(all_rows, runs)]
+    lines += ["", "## 8. Thời gian & token mỗi bài", "", "```", *timing_summary(
+        [{"seconds": r.seconds, "calls": r.calls} for r in all_rows if not r.error]), "```",
+              "", "Tổng:", f"```\n{json.dumps(USAGE, indent=1)}\n```"]
     return "\n".join(lines)
 
 
+def stability(all_rows: list[Row], runs: int) -> list[str]:
+    """Accuracy per run and the articles whose labels change between runs."""
+    lines = [f"## 7. Độ ổn định qua {runs} lần chạy", "",
+             "| Lần | Priority Pass | Ảnh hưởng Pass | Badge Pass | Thời gian TB/bài (s) |", "|---|---|---|---|---|"]
+    acc = {"pri": [], "imp": [], "badge": []}
+    for k in range(1, runs + 1):
+        real = [r for r in all_rows if r.run == k and not r.error and r.stt.upper() != "VD"]
+        if not real:
+            continue
+        n = len(real)
+        p, i, b = (sum(r.pri_pass for r in real), sum(r.imp_pass for r in real),
+                   sum(r.pri_pass and r.imp_pass for r in real))
+        for key, v in (("pri", p), ("imp", i), ("badge", b)):
+            acc[key].append(v / n)
+        lines.append(f"| {k} | {rate(p, n)} | {rate(i, n)} | {rate(b, n)} | "
+                     f"{statistics.mean(r.seconds for r in real):.1f} |")
+    lines += ["", "Độ chính xác qua các lần (%): " + " · ".join(
+        f"{name} {spread([100 * x for x in acc[key]], '{:.0f}')}"
+        for key, name in (("pri", "Priority"), ("imp", "Ảnh hưởng"), ("badge", "Badge"))), ""]
+
+    by_case: dict[str, list[Row]] = {}
+    for r in all_rows:
+        if not r.error:
+            by_case.setdefault(r.stt, []).append(r)
+    unstable = []
+    for stt, rs in by_case.items():
+        cells = []
+        for key, exp in (("event_type", None), ("priority", rs[0].exp_priority), ("impact", rs[0].exp_impact)):
+            vals = [r.pred.get(key, "") for r in rs]
+            dist, share = agreement(vals)
+            if share < 1:
+                hit = f", khớp Expected {sum(v == exp for v in vals)}/{len(vals)}" if exp else ""
+                cells.append(f"{key}: {dist}{hit}")
+        if cells:
+            unstable.append(f"- [{stt}] {rs[0].ticker} {rs[0].title[:70]} — " + "; ".join(cells))
+    stable = len(by_case) - len(unstable)
+    lines += [f"Bài cho cùng nhãn ở mọi lần: {stable}/{len(by_case)}", ""]
+    if unstable:
+        lines += ["Bài có nhãn thay đổi giữa các lần:", "", *unstable]
+    return lines
+
+
 def write_csv(rows: list[Row]) -> None:
-    cols = ["STT", "Mã", "Title", "Priority (pipeline)", "Ảnh hưởng (pipeline)", "Priority Expected",
+    cols = ["Lần", "STT", "Mã", "Title", "Priority (pipeline)", "Ảnh hưởng (pipeline)", "Priority Expected",
             "Ảnh hưởng Expected", "Kết quả Priority", "Kết quả Ảnh hưởng", "Relevance", "Loại sự kiện",
-            "Mã quy tắc", "Lý giải Relevance", "Lý giải Priority", "Lý giải Ảnh hưởng", "Cờ", "Lỗi"]
+            "Mã quy tắc", "Lý giải Relevance", "Lý giải Priority", "Lý giải Ảnh hưởng", "Cờ", "Lỗi",
+            "Thời gian (s)", "Số lần gọi", "Input", "Cache đọc", "Cache ghi", "Output"]
     with open(OUT / "results.csv", "w", newline="", encoding="utf-8-sig") as fh:
         w = csv.writer(fh)
         w.writerow(cols)
         for r in rows:
-            p = r.pred
-            w.writerow([r.stt, r.ticker, r.title, p.get("priority", ""), p.get("impact", ""), r.exp_priority,
+            p, t = r.pred, sum_tokens(r.calls)
+            w.writerow([r.run, r.stt, r.ticker, r.title, p.get("priority", ""), p.get("impact", ""), r.exp_priority,
                         r.exp_impact, "" if r.error else ("Pass" if r.pri_pass else "Fail"),
                         "" if r.error else ("Pass" if r.imp_pass else "Fail"), p.get("relevance", ""),
                         p.get("event_type", ""), p.get("rule_ids", ""), p.get("relevance_reason", ""),
-                        p.get("priority_reason", ""), p.get("impact_reason", ""), p.get("flags", ""), r.error])
+                        p.get("priority_reason", ""), p.get("impact_reason", ""), p.get("flags", ""), r.error,
+                        r.seconds, len(r.calls), t["input_tokens"], t["cache_read_input_tokens"],
+                        t["cache_creation_input_tokens"], t["output_tokens"]])
 
 
 def main(argv=None) -> int:
@@ -197,7 +249,11 @@ def main(argv=None) -> int:
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--fetch-only", action="store_true", help="chỉ tải bài vào cache, không gọi Claude")
+    ap.add_argument("--repeat", type=int, default=1, help="chạy cả bộ N lần để đo độ ổn định")
+    ap.add_argument("--phoenix", action="store_true", help="gửi trace sang Phoenix (cần `uv run phoenix serve`)")
     args = ap.parse_args(argv)
+    if args.repeat < 1:
+        ap.error("--repeat phải ≥ 1")
 
     rows = read_kb(args.xlsx)
     if args.limit:
@@ -210,6 +266,8 @@ def main(argv=None) -> int:
             print(f"[{r.stt}] {'OK ' if f.text else 'ERR'} {r.ticker} {r.url} {f.error}")
         return 0
 
+    if args.phoenix and (why := tracing.setup()):  # before the Anthropic client exists
+        print(f"Phoenix tắt: {why}", file=sys.stderr)
     try:
         llm.client()  # fail fast: credentials + model availability
     except (TypeError, RuntimeError, anthropic.AuthenticationError) as exc:
@@ -217,10 +275,19 @@ def main(argv=None) -> int:
               "Đặt ANTHROPIC_API_KEY (hoặc đăng nhập `ant auth login`) rồi chạy lại.", file=sys.stderr)
         return 2
 
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        rows = list(pool.map(run_row, rows))
-    write_csv(rows)
-    text = report(rows)
+    all_rows: list[Row] = []
+    for k in range(1, args.repeat + 1):
+        started = time.perf_counter()
+        batch = [replace(r, run=k, pred={}, error="", calls=[]) for r in rows]
+        with ThreadPoolExecutor(max_workers=args.workers) as pool:
+            batch = list(pool.map(run_row, batch))
+        all_rows += batch
+        done = [r for r in batch if not r.error and r.stt.upper() != "VD"]
+        print(f"Lần {k}/{args.repeat}: {time.perf_counter() - started:.0f}s · Badge "
+              f"{rate(sum(r.pri_pass and r.imp_pass for r in done), len(done))}")
+    write_csv(all_rows)
+    tracing.flush()
+    text = report(all_rows, args.repeat)
     (OUT / "report.md").write_text(text, encoding="utf-8")
     print(text.split("## 2.")[0])
     print(f"Chi tiết: {OUT / 'report.md'}, {OUT / 'results.csv'}")

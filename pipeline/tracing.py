@@ -28,7 +28,7 @@ def setup(project: str | None = None) -> str:
         from openinference.instrumentation.langchain import LangChainInstrumentor
         from phoenix.otel import register
     except ImportError:
-        return "thiếu gói Phoenix: chạy `uv sync --group phoenix`"
+        return "thiếu gói Phoenix: chạy `uv sync`"
 
     os.environ.setdefault("ANTHROPIC_OPEN_TELEMETRY", "false")  # keep only the OpenInference LLM span
     base = os.environ.get("PHOENIX_COLLECTOR_ENDPOINT", DEFAULT_ENDPOINT).rstrip("/")
