@@ -160,3 +160,20 @@ def test_boundaries_merge_details_drop_background_and_offset(monkeypatch, jev_gr
     roles["E3"] = ROLE_OFFSET
     o = evaluate_ticker(m, facts, load_profiles()["NVL"], date(2026, 10, 20), event_roles=roles)
     assert o.event.event_id == "E1"  # the offset never becomes the focus
+
+
+def test_price_only_event_is_never_the_focus_when_fundamentals_exist(monkeypatch, jev_graph):
+    price = EventFact(event_id="E3", event_type="A35", description="HPG tăng 2,99%", subject_entity="HPG",
+                      is_new_info=True, is_update_of_announced_event=False)
+    output = EventFact(event_id="E1", event_type="A02", description="Sản lượng 9T +39%", subject_entity="HPG",
+                       is_new_info=True, is_update_of_announced_event=False,
+                       figures=[Figure(metric="kpi_yoy_pct", value=39, unit="%", quote="tăng 39%")])
+    facts = ArticleFacts(events=[output, price],
+                         ticker_mentions=[TickerMention(ticker="HPG", role="subject", event_ids=["E1", "E3"])])
+    answers = {"HPG__main_event": choice("E3", {"E3": 0.99, "E1": 0.01}),
+               "HPG__impact": choice("Tích cực", {"Tích cực": 1.0, "Tiêu cực": 0.0, "Trung lập": 0.0})}
+    monkeypatch.setattr(sc, "client", lambda: FakeJev(answers))
+    monkeypatch.setattr(graph, "extract", lambda article: facts)
+    [r] = graph.evaluate(ARTICLE.model_copy(update={"watchlist": ["HPG"]}))
+    assert r.event_type == "A02" and r.priority.value == "Cao" and r.impact.value == "Tích cực"
+    assert "focus_not_price_only:E3→E1" in r.flags

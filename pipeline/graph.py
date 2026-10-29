@@ -111,18 +111,32 @@ def node_relevance(state: TickerState) -> dict:
     return {"relevance": Relevance(d.answer), "relevance_ids": ["G-5"], "relevance_conf": d.confidence}
 
 
+def _focus_event(main: dict, facts: ArticleFacts, mention: TickerMention) -> tuple[str | None, bool]:
+    """Jev's focus event, except a price-only event (A35) while the article has other events:
+    A35 means "no new fundamental information", so the best-scored other event is used instead."""
+    answer, probs = main.get("answer"), main.get("probabilities", {})
+    types = {e.event_id: e.event_type for e in facts.events if e.event_id in (mention.event_ids or probs)}
+    others = [k for k in probs if types.get(k) not in (None, "A35")]
+    if types.get(answer) == "A35" and others:
+        return max(others, key=probs.get), True
+    return answer, False
+
+
 def node_rules(state: TickerState) -> dict:
     article, m, scores = state["article"], state["mention"], state.get("scores", {})
     main = scores.get("main_event", {})
+    focus_id, overridden = _focus_event(main, state["facts"], m)
     o = evaluate_ticker(m, state["facts"], load_profiles()[m.ticker], article.published_at,
                         relevance=state["relevance"], relevance_ids=state["relevance_ids"],
-                        main_event_id=main.get("answer"),
+                        main_event_id=focus_id,
                         jev_offsetting=bool(scores.get("offsetting", {}).get("answer")
                                             and scores.get("has_numbers", {}).get("answer")),
                         event_roles={eid: ev["role"]["answer"] for eid, ev in scores.get("events", {}).items()
                                      if "role" in ev} or None)
     conf = state.get("relevance_conf", 1.0)
-    if "G-9" in o.priority_rule_ids:
+    if overridden:
+        o.flags.append(f"focus_not_price_only:{main['answer']}→{focus_id}")
+    elif "G-9" in o.priority_rule_ids:
         conf = min(conf, main.get("p", 1.0))
     # No numbers to compare (P-MOD-5 keeps it at Trung bình): Jev may lower it to Thấp, unless the type has a floor.
     jev_pri = scores.get("priority", {})

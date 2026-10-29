@@ -142,7 +142,7 @@ L = {
  "WL-067": (TT, "A23", TB, POS, "R-TT-1; A23; I-YT-8",
    "Khối ngoại mua ròng HPG 128,14 tỷ, dẫn đầu chiều mua → Trung bình/Tích cực (như KB#17).", "kb",
    "NVL: Trực tiếp/Trung bình/Tích cực (A23 — mua ròng 18,03 tỷ); FPT: Trực tiếp/Trung bình/Tiêu cực (A23 — bán ròng 91,16 tỷ)"),
- "WL-068": (TT, "A02", CAO, POS, "R-TT-1; A02, P-TH-06, G-6; I-YT-3",
+ "WL-068": (TT, "A02", CAO, POS, "R-TT-1; A02, P-TH-06, G-9; I-YT-3",
    "Có thông tin mới cùng ngày: sản lượng 9T 10,3 triệu tấn (+39%), HRC +59%; Hòa Phát tăng giá thép cây 100đ/kg và HRC ~10 USD/tấn. Diễn biến giá cổ phiếu không phải căn cứ.", "kb", ""),
  "WL-069": (TT, "A14", THAP, NEU, "R-TT-2; A14; I-TL-b",
    "Mục tiêu nâng lên 10 KCN trong 10 năm, BĐS chiếm 5–7% cơ cấu; chưa có vốn/hợp đồng cụ thể → Thấp/Trung lập.", "", ""),
